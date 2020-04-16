@@ -22,4 +22,6 @@ subroutine test_cell_partition
         !zapolnitq massiv an_by_cn
 
     enddo
+
+    cutoff=cutoff_ideal
 endsubroutine test_cell_partition
