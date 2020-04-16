@@ -11,7 +11,7 @@ subroutine test_cell_partition
     !integer cn_by_an(0:neibors_max,atoms_max_array)
 
     !proveritq zadany li koordinaty atomov
-    if (atoms__in_total .le. 0) stop "gde atomy? kolicxestvo atomov slisxkom malo"
+    if (atoms__in_total .le. 0) stop "gde atomy? kolicxestvo atomov slisxkom malo."
 
     cutoff_ideal=cutoff
 
