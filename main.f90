@@ -4,11 +4,11 @@ PROGRAM main
     integer i
 
 
-    do i = 1,118
-        print*, "this is element #",i,elements_names(2*i-1:2*i)
-    enddo
+!    do i = 1,118
+!        print*, "this is element #",i,elements_names(2*i-1:2*i)
+!    enddo
 
-    print *, ""
+    print *, mod(-5,2)
 
     print *, "Eta programma budet vycxislqatq strukturu jadra dislokacii …"
     print *, "s vektorom bqurgersa po napravleniiju 100 v OCK zxeleze."

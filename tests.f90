@@ -3,7 +3,7 @@ subroutine test_cell_partition
     use interaction_mod
 
     integer i
-    real(8) cutoff_ideal
+
     print*, "TEST_CELL_PARTITION zapuhxen"
 
     !real(8) R_curr(1,cnt_q)
@@ -13,15 +13,19 @@ subroutine test_cell_partition
     !proveritq zadany li koordinaty atomov
     if (atoms__in_total .le. 0) stop "gde atomy? kolicxestvo atomov slisxkom malo."
 
-    cutoff_ideal=cutoff
 
-    do i=7000,13000
+
+    do i=9000,130000,1000
+
         !vybratq cutoff v cikle
-        cutoff=cutoff_ideal*1d-4*i
+        cutoff_param=cutoff*1d-4*i
 
         !zapolnitq massiv an_by_cn
+        call fill_an_by_cn
 
+        call wo_xyz_rhcells
+        STOP "filling an by cn test"
     enddo
 
-    cutoff=cutoff_ideal
+
 endsubroutine test_cell_partition
