@@ -15,7 +15,7 @@ subroutine test_cell_partition
 
 
 
-    do i=9000,130000,1000
+    do i=19000,195000,500
 
         !vybratq cutoff v cikle
         cutoff_param=cutoff*1d-4*i
@@ -24,7 +24,7 @@ subroutine test_cell_partition
         call fill_an_by_cn
 
         call wo_xyz_rhcells
-        STOP "filling an by cn test"
+        !STOP "filling an by cn test"
     enddo
 
 

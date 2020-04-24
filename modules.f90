@@ -1,6 +1,6 @@
 module array_parameters_mod
     save
-    integer, parameter  ::  x_layers= 12,y_layers= 20,z_layers= 12
+    integer, parameter  ::  x_layers= 13,y_layers= 13,z_layers= 13
     integer, parameter  ::  atoms_max_array = &
         (2*x_layers+1)*(2*y_layers+1)*(2*z_layers+1)*3
     integer             ::  atoms__in_total
