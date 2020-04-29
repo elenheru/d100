@@ -1,21 +1,28 @@
 module array_parameters_mod
     save
-    integer, parameter  ::  x_layers= 13,y_layers= 13,z_layers= 13
+    integer, parameter  ::  x_layers= 17,y_layers= 17,z_layers= 17
     integer, parameter  ::  atoms_max_array = &
         (2*x_layers+1)*(2*y_layers+1)*(2*z_layers+1)*3
     integer             ::  atoms__in_total
-    integer, parameter  ::  cells_range=nint(15d-1*atoms_max_array**(1d0/3d0))
+    integer, parameter  ::  cells_xrange=5*x_layers/3
+    integer, parameter  ::  cells_yrange=5*y_layers/3
+    integer, parameter  ::  cells_zrange=5*z_layers/3
 
 endmodule array_parameters_mod
 
 module      interaction_mod
     use array_parameters_mod
+    use phys_parameters_mod
     save
     real(8), parameter ::   cutoff = 3.5d0*2.5 !sphere where the neighbor is
     real(8)            ::   cutoff_param = cutoff
-    integer, parameter ::   neibors_max = 150
+    real(8), parameter ::   incell_atoms_exceed = 15d-1
+    integer, parameter ::   incell_atoms_max = &
+        nint( (16d0*sqrt(3d0)/9d0*(cutoff*sqrt(375d-3))**3)/(5d-1*(a0**3))*incell_atoms_exceed )
     integer an_by_cn(3,atoms_max_array)
-    integer cn_by_an(0:neibors_max,-cells_range:cells_range,-cells_range:cells_range,-cells_range:cells_range)
+    integer cn_by_an(0:incell_atoms_max,-cells_xrange:cells_xrange,-cells_yrange:cells_yrange,-cells_zrange:cells_zrange)
+    integer an_by_cn_4d(4,atoms_max_array)
+    integer cn_by_an_4d(0:incell_atoms_max,-cells_xrange:cells_xrange,-cells_yrange:cells_yrange,-cells_zrange:cells_zrange,0:3)
     !real(8) distan_list(  neibors_max,atoms_max_array)
 endmodule   interaction_mod
 

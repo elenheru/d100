@@ -5,7 +5,7 @@ subroutine      spawn_bcc_rectangular_100
     real(8) a_half
     integer cnt_x, cnt_y, cnt_z, cnt_q
 
-    print*,cells_range," is cells range"
+    print*,cells_xrange,cells_yrange,cells_zrange," eto x y z cells range"
 
     a_half  = a0*5d-1
     cnt_q = 0
@@ -40,25 +40,43 @@ subroutine      spawn_bcc_rectangular_100
 107 format  (A,I10.3,A,$)
 endsubroutine   spawn_bcc_rectangular_100
 
-subroutine      wo_xyz_rhcells !#196
+subroutine      wo_xyz_rhcells_4d !#196
     use positions_mod
     use wo_counters_mod
     use interaction_mod
     use chemical_elements_names_mod
     USE phys_parameters_mod, ONLY:A0
     implicit none
-    integer i_atoms,S,w,cn
+    logical test_if_cell_is_close_4d
+    integer i_atoms,s,w,cn
     character (LEN = 25) filename_trajectory
     xyz__WOcounter=xyz__WOcounter+1
-    write(filename_trajectory,'(A,I5.5,A)'),"rhdch_cell_test_",xyz__WOcounter,".xyz"
+    !stop "wo xyz_rhcells ustarela, ispolqzujetsqa 4d versija "
+    write(filename_trajectory,'(A,I5.5,A)') "rhdch_cell_test_",xyz__WOcounter,".xyz"
     open (104, file = filename_trajectory)
 
-    write(104,*),atoms__in_total
-    write(104,*),"image of relaxation # ",xyz__wocounter," rhombic dodecahedron edge is ", cutoff_param
+    write(104,*) atoms__in_total
+    write(104,*) "image of relaxation # ",xyz__wocounter," rhombic dodecahedron edge is ", cutoff_param
 
     do i_atoms=1,atoms__in_total
-        cn = 1 + mod( sign(1,(an_by_cn(1,i_atoms) + an_by_cn(2,i_atoms) + an_by_cn(3,i_atoms))) , 12)
-        write(104,196), elements_names(2*cn-1:2*cn), r_curr(1:3,i_atoms)
+        !cn = 1 + mod( abs((an_by_cn(1,i_atoms) + 9*an_by_cn(2,i_atoms) + 81*an_by_cn(3,i_atoms))) , 52)
+        cn = an_by_cn_4d(4,i_atoms) + 1
+!        if (.not.test_if_cell_is_close_4d(&
+!                an_by_cn_4d(1,i_atoms),&
+!                an_by_cn_4d(2,i_atoms),&
+!                an_by_cn_4d(3,i_atoms),&
+!                an_by_cn_4d(4,i_atoms)  )) cn=7
+!        if ( test_if_cell_is_close_4d(&
+!             an_by_cn_4d(1,i_atoms),&
+!             an_by_cn_4d(2,i_atoms),&
+!             an_by_cn_4d(3,i_atoms),&
+!             an_by_cn_4d(4,i_atoms)  )) cn=1
+!        if ( ( an_by_cn_4d(1,i_atoms) .eq. 0) .and. &
+!             ( an_by_cn_4d(2,i_atoms) .eq. 0) .and. &
+!             ( an_by_cn_4d(3,i_atoms) .eq. 0) .and. &
+!             ( an_by_cn_4d(4,i_atoms) .eq. 0) ) cn=8
+
+        write(104,196) elements_names(2*cn-1:2*cn), r_curr(1:3,i_atoms)
     enddo
 
 
@@ -67,9 +85,9 @@ subroutine      wo_xyz_rhcells !#196
 
     close(104)
 196 format(A2,3(2x,ES11.4))
-endsubroutine   wo_xyz_rhcells
+endsubroutine   wo_xyz_rhcells_4d
 
-subroutine fill_an_by_cn
+subroutine fill_an_by_cn_4d
     use positions_mod
     use interaction_mod
     use phys_parameters_mod
@@ -78,20 +96,23 @@ subroutine fill_an_by_cn
     real(8) scale_factor,r_at(3),r_rel(3),r_rel_abs(3),cellpos(3)
     real(8) hc,hc_reci
 
-    logical(1) :: xp(6),xn(6),yp(6),yn(6),zp(6),zn(6),our(6)
-    !      x+y>0  ; -x+y>0  ; y+z>0  ; -y+z>0  ; z+x>0  ; -z+x>0
-    xp=(/ .true.  , .false. , .true.  , .true.  , .true.  , .true.  /)
-    xn=(/ .false. , .true.  , .true.  , .true.  , .false. , .false. /)
-
-    yp=(/ .true.  , .true.  , .true.  , .false. , .true.  , .true.  /)
-    yn=(/ .false. , .false. , .false. , .true.  , .true.  , .true.  /)
-
-    zp=(/ .true.  , .true.  , .true.  , .true.  , .true.  , .false. /)
+    logical(1) :: our(6)
+    logical(1), parameter, dimension(6) :: &
+    xp=(/ .true.  , .false. , .true.  , .true.  , .true.  , .true.  /),&
+    xn=(/ .false. , .true.  , .true.  , .true.  , .false. , .false. /),&
+    yp=(/ .true.  , .true.  , .true.  , .false. , .true.  , .true.  /),&
+    yn=(/ .false. , .false. , .false. , .true.  , .true.  , .true.  /),&
+    zp=(/ .true.  , .true.  , .true.  , .true.  , .true.  , .false. /),&
     zn=(/ .true.  , .true.  , .false. , .false. , .false. , .true.  /)
+    !      x+y>0  ; -x+y>0  ;  y+z>0  ; -y+z>0  ;  z+x>0  ; -z+x>0
 
-    print"(A,F9.5,A,3I4.2)","Zapolnqajem massiv an_by_cn. Radius obrezanija = ",cutoff_param," angstrem"
+    print"(A,F9.5,A,3I4.2)","Zapolnqajem 4d massiv an_by_cn. Radius obrezanija = ",cutoff_param," angstrem"
 
-    hc=sqrt(16d0/27d0)*(cutoff_param)
+    ! mozxno perepakovatq massiv anbycn tak cxtoby on byl 4mernym.
+    ! togda ne ponadobitsqa izbytok razmera massiva iz-za afinnosti FCC bazisa
+
+!    hc=sqrt(16d0/27d0)*(cutoff_param) !jesli granq ravna cutoff
+    hc=sqrt(2d0/9d0)*(cutoff_param) !jesli diametr vpisannoj sfery raven cutoff
     hc_reci=1d0/hc
 
     do i_atoms=1,atoms__in_total
@@ -104,10 +125,26 @@ subroutine fill_an_by_cn
         if ( mod( sum(cn_raw) ,2 ) .eq. 0 ) then
             !eto kubik vnutri jacxejki, nuzxno razlozxitq koordinaty po bazisu
 
-            an_by_cn(1,i_atoms) =(-cn_raw(2)-cn_raw(3)+cn_raw(1) )/2
-            an_by_cn(2,i_atoms) =(-cn_raw(3)-cn_raw(1)+cn_raw(2) )/2
-            an_by_cn(3,i_atoms) =(-cn_raw(1)-cn_raw(2)+cn_raw(3) )/2
+            !fcc basis
+!            an_by_cn(1,i_atoms) =-(-cn_raw(2)-cn_raw(3)+cn_raw(1) )/2
+!            an_by_cn(2,i_atoms) =-(-cn_raw(3)-cn_raw(1)+cn_raw(2) )/2
+!            an_by_cn(3,i_atoms) =-(-cn_raw(1)-cn_raw(2)+cn_raw(3) )/2
+            !fcc basis
 
+            !pc with additions basis
+            an_by_cn_4d(1,i_atoms) = ( cn_raw(1)-modulo( cn_raw(1),2 ) )/2
+            an_by_cn_4d(2,i_atoms) = ( cn_raw(2)-modulo( cn_raw(2),2 ) )/2
+            an_by_cn_4d(3,i_atoms) = ( cn_raw(3)-modulo( cn_raw(3),2 ) )/2
+            if (     modulo(cn_raw(1),2) .eq. 1 .and. modulo(cn_raw(2),2) .eq. 1 ) then
+                an_by_cn_4d(4,i_atoms) = 1
+            elseif ( modulo(cn_raw(2),2) .eq. 1 .and. modulo(cn_raw(3),2) .eq. 1 ) then
+                an_by_cn_4d(4,i_atoms) = 2
+            elseif ( modulo(cn_raw(3),2) .eq. 1 .and. modulo(cn_raw(1),2) .eq. 1 ) then
+                an_by_cn_4d(4,i_atoms) = 3
+            else
+                an_by_cn_4d(4,i_atoms) = 0
+            endif
+            !pc with additions basis
             cycle
         else
             !eto kubik dlqa razdelenija. nuzxno scxitatq logiku
@@ -119,12 +156,7 @@ subroutine fill_an_by_cn
             our(4) =  r_rel(3) .gt.  r_rel(2)
             our(5) =  r_rel(3) .gt. -r_rel(1)
             our(6) =  r_rel(1) .gt.  r_rel(3)
-!                    ( our(1) .eqv. xp(1) ).and. &
-!                    ( our(2) .eqv. xp(2) ).and. &
-!                    ( our(3) .eqv. xp(3) ).and. &
-!                    ( our(4) .eqv. xp(4) ).and. &
-!                    ( our(5) .eqv. xp(5) ).and. &
-!                    ( our(6) .eqv. xp(6) ) &
+
             if (&
                     ( our(1) .eqv. xp(1) ).and. &
                     ( our(2) .eqv. xp(2) ).and. &
@@ -168,54 +200,192 @@ subroutine fill_an_by_cn
                 ) then
                 cn_raw(3)=cn_raw(3)-1
             else
-                STOP "tablica ne dolzxna proverqatsqa dlqa nerelevantnoj pary koordinat"
                 print*,"Tablica istinnosti ne sovpala ni s kem. Atom ",i_atoms
                 print "(1x,6L2)", our
-
+                STOP "tablica ne dolzxna proverqatsqa dlqa nerelevantnoj pary koordinat"
             endif
-            an_by_cn(1,i_atoms) =(-cn_raw(2)-cn_raw(3)+cn_raw(1) )/2
-            an_by_cn(2,i_atoms) =(-cn_raw(3)-cn_raw(1)+cn_raw(2) )/2
-            an_by_cn(3,i_atoms) =(-cn_raw(1)-cn_raw(2)+cn_raw(3) )/2
+            !fcc basis
+!            an_by_cn(1,i_atoms) =(-cn_raw(2)-cn_raw(3)+cn_raw(1) )/2
+!            an_by_cn(2,i_atoms) =(-cn_raw(3)-cn_raw(1)+cn_raw(2) )/2
+!            an_by_cn(3,i_atoms) =(-cn_raw(1)-cn_raw(2)+cn_raw(3) )/2
+            !fcc basis
+
+            !pc with additions basis
+            an_by_cn_4d(1,i_atoms) = ( cn_raw(1)-modulo( cn_raw(1),2 ) )/2
+            an_by_cn_4d(2,i_atoms) = ( cn_raw(2)-modulo( cn_raw(2),2 ) )/2
+            an_by_cn_4d(3,i_atoms) = ( cn_raw(3)-modulo( cn_raw(3),2 ) )/2
+            if (     modulo(cn_raw(1),2) .eq. 1 .and. modulo(cn_raw(2),2) .eq. 1 ) then
+                an_by_cn_4d(4,i_atoms) = 1
+            elseif ( modulo(cn_raw(2),2) .eq. 1 .and. modulo(cn_raw(3),2) .eq. 1 ) then
+                an_by_cn_4d(4,i_atoms) = 2
+            elseif ( modulo(cn_raw(3),2) .eq. 1 .and. modulo(cn_raw(1),2) .eq. 1 ) then
+                an_by_cn_4d(4,i_atoms) = 3
+            else
+                an_by_cn_4d(4,i_atoms) = 0
+            endif
+            !pc with additions basis
         endif
-
-
-!
-!        cellpos(1) = ( 1d0 / scale_factor ) * (cn_raw(2) + cn_raw(3))
-!        cellpos(2) = ( 1d0 / scale_factor ) * (cn_raw(3) + cn_raw(1))
-!        cellpos(3) = ( 1d0 / scale_factor ) * (cn_raw(1) + cn_raw(2))
-!
-!        r_rel(1:3)=r_at(1:3)-cellpos(1:3)
-!        r_rel_abs(1:3) = abs(r_rel(1:3))
-!        small=minloc(r_rel_abs,DIM=1)
-!        r_rel_abs(small)=0d0
-!        if(&
-!            cn_raw(1).eq.0 .and. &
-!            cn_raw(2).eq.0 .and. &
-!            cn_raw(3).eq.1 ) then
-!!            print 263,"Atom nomer ",i_atoms," nahoditsqa v ", r_at ," vozle ",cellpos,&
-!!                " v FCC predstavlenii [[",cn_raw,"]].",&
-!!                " Otnositelqnyje koordinaty ",r_rel," po modulqu ",r_rel_abs,"; rasstojanije ",norm2(r_rel)
-!
-!        endif
-!        if(sum(r_rel_abs).lt.insphere_radius*sqrt(2d0)) cycle !mb sqrt(2)
-!
-!        cn_add(1)=nint( sign( 1d0,r_rel(1) ) )
-!        cn_add(2)=nint( sign( 1d0,r_rel(2) ) )
-!        cn_add(3)=nint( sign( 1d0,r_rel(3) ) )
-!        cn_add(small)=0
-!
-!        an_by_cn(1:3,i_atoms)=cn_raw(1:3)!+cn_add(1:3)
 
     enddo
 
-!260 format (A,I8.4,A,3(F9.4,1x),A,3(F8.3,1x),A,3(I5.4,1x),A,A,3(F8.3,1x),A)
-!261 format (A,1x,I4.2,$)
-!262 format (A,1x,I4.2)
-263 format (/,A,I8.4,A,3(F9.4,1x),A,3(F8.3,1x),/,A,3(I5.4,1x),A,/,A,3(F8.3,1x),A,3(F8.3,1x),A,F8.4)
+!263 format (/,A,I8.4,A,3(F9.4,1x),A,3(F8.3,1x),/,A,3(I5.4,1x),A,/,A,3(F8.3,1x),A,3(F8.3,1x),A,F8.4)
 
-endsubroutine fill_an_by_cn
+endsubroutine fill_an_by_cn_4d
 
-subroutine fill_cn_by_an
+subroutine fill_cn_by_an_4d
+    use positions_mod
+    use interaction_mod
+    use phys_parameters_mod
 
-endsubroutine fill_cn_by_an
+    implicit none
+    integer i_atoms,na
+    integer anxy,anyz,anzx,anic
 
+    print"(A,F9.5,A,3I4.2)","Zapolnqajem massiv cn_by_an. Radius obrezanija = ",cutoff_param," angstrem"
+    cn_by_an_4d=0
+    na=0
+
+    do i_atoms=1,atoms__in_total
+
+        if(na+1 .ge. incell_atoms_max) stop "massiv cn_by_an perepolnen"
+        anxy=an_by_cn_4d(1,i_atoms)
+        anyz=an_by_cn_4d(2,i_atoms)
+        anzx=an_by_cn_4d(3,i_atoms)
+        anic=an_by_cn_4d(4,i_atoms)
+
+        na = cn_by_an_4d( 0,anxy,anyz,anzx,anic)
+            !PRINT*, "NA, IATOMS", NA,I_ATOMS," AN_BY_CN = ",AN_BY_CN(1:3,I_ATOMS)
+            !CALL SLEEP(1)
+        cn_by_an_4d( 0,anxy,anyz,anzx,anic ) = na + 1
+        cn_by_an_4d( na+1,anxy,anyz,anzx,anic ) = i_atoms
+            !PRINT*, "CN_BY_AN (0)",CN_BY_AN( 0,ANXY,ANYZ,ANZX ), "CN_BY_AN (NA)",CN_BY_AN( NA,ANXY,ANYZ,ANZX ),I_ATOMS
+            !PRINT*,""
+    enddo
+
+    print*,"Zapolnenije cn_by_an zaversxeno. Vsego atomov ", sum(cn_by_an_4d(0,:,:,:,:)), " = ",atoms__in_total
+
+endsubroutine fill_cn_by_an_4d
+
+subroutine list_of_42_nearest_cells_4dpc(ixy,iyz,izx,icell,list)
+    implicit none
+    integer, intent(in) :: ixy,iyz,izx,icell
+    integer, intent(out),dimension(4,42) :: list
+    integer, dimension(4) :: origin
+    interface
+        function fcc_to_pc4d(fcc_cell) result(pc4d_cell)
+        implicit none
+        integer, dimension(3) :: fcc_cell,cn_raw
+        integer, dimension(4) :: pc4d_cell
+        endfunction fcc_to_pc4d
+    endinterface
+    origin(1)=ixy
+    origin(2)=iyz
+    origin(3)=izx
+    origin(4)=icell
+
+    list(1:4, 1)=origin(1:4)+(/ 0, 1,-1, 3/)!fcc_to_pc4d( (/ 2, 0,-1/) )!_FCC  ;[[ 1, 2,-1]]_PC ; Distance is        2.4495
+    list(1:4, 2)=origin(1:4)+(/-1,-1, 0, 3/)!fcc_to_pc4d( (/-2, 0, 1/) )!_FCC  ;[[-1,-2, 1]]_PC ; Distance is        2.4495
+    list(1:4, 3)=origin(1:4)+(/-1,-1, 0, 2/)!fcc_to_pc4d( (/-2, 1, 0/) )!_FCC  ;[[-2,-1, 1]]_PC ; Distance is        2.4495
+    list(1:4, 4)=origin(1:4)+(/-1,-1, 1, 1/)!fcc_to_pc4d( (/-2, 1, 1/) )!_FCC  ;[[-1,-1, 2]]_PC ; Distance is        2.4495
+    list(1:4, 5)=origin(1:4)+(/-1,-1,-1, 3/)!fcc_to_pc4d( (/-1,-1, 0/) )!_FCC  ;[[-1,-2,-1]]_PC ; Distance is        2.4495
+    list(1:4, 6)=origin(1:4)+(/ 0,-1, 0, 0/)!fcc_to_pc4d( (/-1,-1, 1/) )!_FCC  ;[[ 0,-2, 0]]_PC ; Distance is     2.0000
+    list(1:4, 7)=origin(1:4)+(/ 0,-1, 0, 3/)!fcc_to_pc4d( (/-1,-1, 2/) )!_FCC  ;[[ 1,-2, 1]]_PC ; Distance is        2.4495
+    list(1:4, 8)=origin(1:4)+(/-1,-1,-1, 2/)!fcc_to_pc4d( (/-1, 0,-1/) )!_FCC  ;[[-2,-1,-1]]_PC ; Distance is        2.4495
+    list(1:4, 9)=origin(1:4)+(/-1,-1, 0, 1/)!fcc_to_pc4d( (/-1, 0, 0/) )!_FCC  ;[[-1,-1, 0]]_PC ; Distance is 1.4142
+    list(1:4,10)=origin(1:4)+(/ 0,-1, 0, 2/)!fcc_to_pc4d( (/-1, 0, 1/) )!_FCC  ;[[ 0,-1, 1]]_PC ; Distance is 1.4142
+    list(1:4,11)=origin(1:4)+(/ 0,-1, 1, 1/)!fcc_to_pc4d( (/-1, 0, 2/) )!_FCC  ;[[ 1,-1, 2]]_PC ; Distance is        2.4495
+    list(1:4,12)=origin(1:4)+(/-1, 0, 0, 0/)!fcc_to_pc4d( (/-1, 1,-1/) )!_FCC  ;[[-2, 0, 0]]_PC ; Distance is     2.0000
+    list(1:4,13)=origin(1:4)+(/-1, 0, 0, 3/)!fcc_to_pc4d( (/-1, 1, 0/) )!_FCC  ;[[-1, 0, 1]]_PC ; Distance is 1.4142
+    list(1:4,14)=origin(1:4)+(/ 0, 0, 1, 0/)!fcc_to_pc4d( (/-1, 1, 1/) )!_FCC  ;[[ 0, 0, 2]]_PC ; Distance is     2.0000
+    list(1:4,15)=origin(1:4)+(/-1, 0, 0, 2/)!fcc_to_pc4d( (/-1, 2,-1/) )!_FCC  ;[[-2, 1, 1]]_PC ; Distance is        2.4495
+    list(1:4,16)=origin(1:4)+(/-1, 0, 1, 1/)!fcc_to_pc4d( (/-1, 2, 0/) )!_FCC  ;[[-1, 1, 2]]_PC ; Distance is        2.4495
+    list(1:4,17)=origin(1:4)+(/ 0,-1,-1, 3/)!fcc_to_pc4d( (/ 0,-2, 1/) )!_FCC  ;[[ 1,-2,-1]]_PC ; Distance is        2.4495
+    list(1:4,18)=origin(1:4)+(/-1,-1,-1, 1/)!fcc_to_pc4d( (/ 0,-1,-1/) )!_FCC  ;[[-1,-1,-2]]_PC ; Distance is        2.4495
+    list(1:4,19)=origin(1:4)+(/ 0,-1,-1, 2/)!fcc_to_pc4d( (/ 0,-1, 0/) )!_FCC  ;[[ 0,-1,-1]]_PC ; Distance is 1.4142
+    list(1:4,20)=origin(1:4)+(/ 0,-1, 0, 1/)!fcc_to_pc4d( (/ 0,-1, 1/) )!_FCC  ;[[ 1,-1, 0]]_PC ; Distance is 1.4142
+    list(1:4,21)=origin(1:4)+(/ 1,-1, 0, 2/)!fcc_to_pc4d( (/ 0,-1, 2/) )!_FCC  ;[[ 2,-1, 1]]_PC ; Distance is        2.4495
+    list(1:4,22)=origin(1:4)+(/-1, 0,-1, 3/)!fcc_to_pc4d( (/ 0, 0,-1/) )!_FCC  ;[[-1, 0,-1]]_PC ; Distance is 1.4142
+    !list(1:4,1)=origin(1:4)+(/ 0, 0, 0, 0/)!fcc_to_pc4d( (/ 0, 0, 0/) )!_FCC  ;[[ 0, 0, 0]]_PC ; Distance is0.0000
+    list(1:4,23)=origin(1:4)+(/ 0, 0, 0, 3/)!fcc_to_pc4d( (/ 0, 0, 1/) )!_FCC  ;[[ 1, 0, 1]]_PC ; Distance is 1.4142
+    list(1:4,24)=origin(1:4)+(/-1, 0,-1, 2/)!fcc_to_pc4d( (/ 0, 1,-2/) )!_FCC  ;[[-2, 1,-1]]_PC ; Distance is        2.4495
+    list(1:4,25)=origin(1:4)+(/-1, 0, 0, 1/)!fcc_to_pc4d( (/ 0, 1,-1/) )!_FCC  ;[[-1, 1, 0]]_PC ; Distance is 1.4142
+    list(1:4,26)=origin(1:4)+(/ 0, 0, 0, 2/)!fcc_to_pc4d( (/ 0, 1, 0/) )!_FCC  ;[[ 0, 1, 1]]_PC ; Distance is 1.4142
+    list(1:4,27)=origin(1:4)+(/ 0, 0, 1, 1/)!fcc_to_pc4d( (/ 0, 1, 1/) )!_FCC  ;[[ 1, 1, 2]]_PC ; Distance is        2.4495
+    list(1:4,28)=origin(1:4)+(/-1, 1, 0, 3/)!fcc_to_pc4d( (/ 0, 2,-1/) )!_FCC  ;[[-1, 2, 1]]_PC ; Distance is        2.4495
+    list(1:4,29)=origin(1:4)+(/ 0,-1,-1, 1/)!fcc_to_pc4d( (/ 1,-2, 0/) )!_FCC  ;[[ 1,-1,-2]]_PC ; Distance is        2.4495
+    list(1:4,30)=origin(1:4)+(/ 1,-1,-1, 2/)!fcc_to_pc4d( (/ 1,-2, 1/) )!_FCC  ;[[ 2,-1,-1]]_PC ; Distance is        2.4495
+    list(1:4,31)=origin(1:4)+(/ 0, 0,-1, 0/)!fcc_to_pc4d( (/ 1,-1,-1/) )!_FCC  ;[[ 0, 0,-2]]_PC ; Distance is     2.0000
+    list(1:4,32)=origin(1:4)+(/ 0, 0,-1, 3/)!fcc_to_pc4d( (/ 1,-1, 0/) )!_FCC  ;[[ 1, 0,-1]]_PC ; Distance is 1.4142
+    list(1:4,33)=origin(1:4)+(/ 1, 0, 0, 0/)!fcc_to_pc4d( (/ 1,-1, 1/) )!_FCC  ;[[ 2, 0, 0]]_PC ; Distance is     2.0000
+    list(1:4,34)=origin(1:4)+(/-1, 0,-1, 1/)!fcc_to_pc4d( (/ 1, 0,-2/) )!_FCC  ;[[-1, 1,-2]]_PC ; Distance is        2.4495
+    list(1:4,35)=origin(1:4)+(/ 0, 0,-1, 2/)!fcc_to_pc4d( (/ 1, 0,-1/) )!_FCC  ;[[ 0, 1,-1]]_PC ; Distance is 1.4142
+    list(1:4,36)=origin(1:4)+(/ 0, 0, 0, 1/)!fcc_to_pc4d( (/ 1, 0, 0/) )!_FCC  ;[[ 1, 1, 0]]_PC ; Distance is 1.4142
+    list(1:4,37)=origin(1:4)+(/ 1, 0, 0, 2/)!fcc_to_pc4d( (/ 1, 0, 1/) )!_FCC  ;[[ 2, 1, 1]]_PC ; Distance is        2.4495
+    list(1:4,38)=origin(1:4)+(/-1, 1,-1, 3/)!fcc_to_pc4d( (/ 1, 1,-2/) )!_FCC  ;[[-1, 2,-1]]_PC ; Distance is        2.4495
+    list(1:4,39)=origin(1:4)+(/ 0, 1, 0, 0/)!fcc_to_pc4d( (/ 1, 1,-1/) )!_FCC  ;[[ 0, 2, 0]]_PC ; Distance is     2.0000
+    list(1:4,40)=origin(1:4)+(/ 0, 1, 0, 3/)!fcc_to_pc4d( (/ 1, 1, 0/) )!_FCC  ;[[ 1, 2, 1]]_PC ; Distance is        2.4495
+    list(1:4,41)=origin(1:4)+(/ 0, 0,-1, 1/)!fcc_to_pc4d( (/ 2,-1,-1/) )!_FCC  ;[[ 1, 1,-2]]_PC ; Distance is        2.4495
+    list(1:4,42)=origin(1:4)+(/ 1, 0,-1, 2/)!fcc_to_pc4d( (/ 2,-1, 0/) )!_FCC  ;[[ 2, 1,-1]]_PC ; Distance is        2.4495
+
+endsubroutine list_of_42_nearest_cells_4dpc
+
+subroutine    check_escaped_atom
+    use positions_mod
+    use interaction_mod
+    use phys_parameters_mod
+
+    implicit none
+    integer :: ixy,iyz,izx,icell
+    integer, dimension(4,42) :: list
+    integer cn,anout_cl,aninn_cl,anout_gl,aninn_gl,perc
+    logical :: is_cell_close
+    real(8) :: dist
+
+    !hotim uznatq jestq li takoj atom, cxto jego net v blizkih jacxejkah,
+    !no on blizxe cxem katoff
+    !nuzxno uznatq kakije jacxejki blizki
+    !dalqsxe perebiratq atomy vnutri dalqokih jacxejek
+    !vycxislqatq rasstojanija do nih, i sravnivatq s katoff
+
+    call list_of_42_nearest_cells_4dpc(0,0,0,0,list)
+    perc=103
+    !print*,-42,ixy,iyz,izx,"+++"
+    do ixy=-cells_xrange,cells_xrange
+        !print"(A,(I4.3,1x))", "Proverka jacxejek ixy = ",ixy
+        do iyz=-cells_yrange,cells_yrange
+            do izx=-cells_zrange,cells_zrange
+            do icell = 1,4
+                is_cell_close=.false.
+                do cn=1,42
+                    if(&
+                    (list(1,cn) .eq. ixy) .and. &
+                    (list(2,cn) .eq. iyz) .and. &
+                    (list(3,cn) .eq. izx) .and. &
+                    (list(4,cn) .eq. icell)  ) then
+                        is_cell_close=.true.
+                    endif
+                enddo
+                if (is_cell_close) cycle
+                !print"(A,3(I4.3,1x))", "Proverka jacxejki ",ixy,iyz,izx,icell
+                do anout_cl=1,cn_by_an_4d(0,ixy,iyz,izx,icell)
+                    anout_gl=cn_by_an_4d(anout_cl,ixy,iyz,izx,icell)
+                    do aninn_cl=1,cn_by_an_4d(0,0,0,0,0)
+                        aninn_gl=cn_by_an_4d(aninn_cl,0,0,0,0)
+                        dist=norm2( R_curr(1:3,anout_gl) - R_curr(1:3,aninn_gl) )
+                        if(dist .le. cutoff_param*1d-2*perc) then
+
+                            print 269,&
+                            "Atom #",aninn_gl," iz jacxejki ",0,0,0,0,"_PC4d, koordinaty ",R_curr(1:3,aninn_gl),&
+                            " i atom #",anout_gl," iz jacxejki ",ixy,iyz,izx,icell,"_PC4d, koordinaty ",R_curr(1:3,aninn_gl),&
+                            "blizxe cxem katoff ",perc," %, hotqa eto ne dolzxno bytq.",dist,cutoff_param
+                            call sleep(1)
+                        endif
+                    enddo
+                enddo
+            enddo
+            enddo
+        enddo
+    enddo
+269 format( 2( A,I7.2,A,4(I4.1,1x),A,3(F7.3,1x) ),/,A,I3.3,A,F9.5,1x,F10.5 )
+
+endsubroutine check_escaped_atom

@@ -19,6 +19,7 @@ PROGRAM main
     print *, ""
 
     call spawn_bcc_rectangular_100
+    !CALL TEST_CELL_GAP
     CALL TEST_CELL_PARTITION
 
 ENDPROGRAM
