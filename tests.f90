@@ -135,36 +135,81 @@ subroutine test_cell_gap
     !proveritq zadany li koordinaty atomov
     if (atoms__in_total .le. 0) stop "gde atomy? kolicxestvo atomov slisxkom malo."
 
-    do i=9000,115000,500
-
+    do i=9000,11000,100
+        print*, i, " eto scxqotcxik"
         cutoff_param=cutoff*1d-4*i
         call test_shift_lattice
         call fill_an_by_cn_4d
         call fill_cn_by_an_4d
-        call check_escaped_atom
+        call find_too_close_pairs
         call wo_xyz_rhcells_4d
         !STOP "filling an by cn test"
     enddo
 
-endsubroutine test_cell_gap
+    contains
 
-subroutine po_distances_fcc_vs_pc
-    implicit none
-    integer :: ixy,iyz,izx,w
-    real :: dist
-    w=1
-    do ixy=-w,w
-        do iyz=-w,w
-            do izx=-w,w
-    !print "(3(A,I2.1),A,$)", " ixy=",ixy," ;iyz=",iyz,";izx=",izx," "
-    print "(3(A,I2.1),A,$)", "[[",ixy,",",iyz,",",izx,"]]_FCC"
-    print "(3(A,I2.1),A,$)", "  ;[[",ixy+izx,",",iyz+ixy,",",izx+iyz,"]]_PC"
-    dist=sqrt(real((ixy+izx)**2+(iyz+ixy)**2+(izx+iyz)**2))
-    print "(A,F8.4)", "   ; Distance is " // repeat(" ",nint(6*dist)) ,dist
+        subroutine find_too_close_pairs
+            use array_parameters_mod
+            use interaction_mod
+            use positions_mod
+            implicit none
+            integer ia1,ia2,i_l
+            real(8) r_rel(3)
+            real(8) dist
+            integer, dimension(4,42) :: list
+            integer, dimension(4) :: cell__1,cell_nb
+            logical :: is_cell_present
+            do ia1 = 2,atoms__in_total
+                do ia2 = 1,ia1-1
+
+                    r_rel(1) = R_curr(1,ia1) - R_curr(1,ia2)
+                    r_rel(2) = R_curr(2,ia1) - R_curr(2,ia2)
+                    r_rel(3) = R_curr(3,ia1) - R_curr(3,ia2)
+                    dist = norm2(r_rel)
+
+                    if (dist .gt. cutoff_param) cycle
+
+                    cell__1=an_by_cn_4d(1:4,ia1)
+                    cell_nb=an_by_cn_4d(1:4,ia2)
+
+                    call list_of_42_nearest_cells_4dpc(&
+                    cell__1(1),cell__1(2),cell__1(3),cell__1(4),list)
+
+                    is_cell_present = .false. .or. (&
+                        (cell_nb(1) .eq. cell_nb(1) ) .and.  &
+                        (cell_nb(2) .eq. cell_nb(2) ) .and.  &
+                        (cell_nb(3) .eq. cell_nb(3) ) .and.  &
+                        (cell_nb(4) .eq. cell_nb(4) ) &
+                    )
+
+                    do i_l=1,42
+                        is_cell_present = is_cell_present .or. (&
+                            (cell_nb(1) .eq. list(1,i_l) ) .and.  &
+                            (cell_nb(2) .eq. list(2,i_l) ) .and.  &
+                            (cell_nb(3) .eq. list(3,i_l) ) .and.  &
+                            (cell_nb(4) .eq. list(4,i_l) ) &
+                        )
+                    enddo
+                    if (is_cell_present) then
+                        cycle
+                    else
+                        print*,"Atoms are too close ",ia1,ia2
+                        print*,R_curr(:,ia1), cell__1
+                        print*,R_curr(:,ia2), cell_nb
+                        print*," list is "
+                        do i_l=1,42
+                            print*, list(1:4,i_l)
+                        enddo
+
+                        stop " too bad "
+                    endif
+
+                enddo
             enddo
-        enddo
-    enddo
-endsubroutine po_distances_fcc_vs_pc
+        print*, "Ladno, ni odin atom ne usxel…"
+        endsubroutine find_too_close_pairs
+
+endsubroutine test_cell_gap
 
 subroutine test_shift_lattice
     use positions_mod
@@ -172,7 +217,7 @@ subroutine test_shift_lattice
     integer i_atoms
     real(8) :: rs(3)
     call random_number(rs)
-    rs=(2d0*rs-(/1d0,1d0,1d0/))*1d-1
+    rs=(2d0*rs-(/1d0,1d0,1d0/))*7d-1
     print*,"Resxotka celikom sdvinuta na slucxajnyj vektor: ",rs
     do i_atoms=1,atoms__in_total
         R_curr(1:3,i_atoms)=R_curr(1:3,i_atoms)+rs(1:3)

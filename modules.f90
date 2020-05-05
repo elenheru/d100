@@ -24,6 +24,16 @@ module      interaction_mod
     integer an_by_cn_4d(4,atoms_max_array)
     integer cn_by_an_4d(0:incell_atoms_max,-cells_xrange:cells_xrange,-cells_yrange:cells_yrange,-cells_zrange:cells_zrange,0:3)
     !real(8) distan_list(  neibors_max,atoms_max_array)
+
+    logical(1), parameter, dimension(6) :: &
+    xp=(/ .true.  , .false. , .true.  , .true.  , .true.  , .true.  /),&
+    xn=(/ .false. , .true.  , .true.  , .true.  , .false. , .false. /),&
+    yp=(/ .true.  , .true.  , .true.  , .false. , .true.  , .true.  /),&
+    yn=(/ .false. , .false. , .false. , .true.  , .true.  , .true.  /),&
+    zp=(/ .true.  , .true.  , .true.  , .true.  , .true.  , .false. /),&
+    zn=(/ .true.  , .true.  , .false. , .false. , .false. , .true.  /)
+    !      x+y>0  ; -x+y>0  ;  y+z>0  ; -y+z>0  ;  z+x>0  ; -z+x>0
+
 endmodule   interaction_mod
 
 module      positions_mod

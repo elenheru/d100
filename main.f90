@@ -2,8 +2,8 @@ PROGRAM main
     use chemical_elements_names_mod
     use interaction_mod, only : incell_atoms_max
     implicit none
-    integer i,ri
-    integer getrandom_int_fromto_inclusive
+    !integer i,ri
+    !integer getrandom_int_fromto_inclusive
 
 
     call random_seed()
@@ -32,9 +32,9 @@ PROGRAM main
     print *, ""
 
     call spawn_bcc_rectangular_100
-    !CALL TEST_CELL_GAP
     !CALL TEST_CELL_PARTITION
-    CALL TEST_CELL_NEIBORS_4D
+    !CALL TEST_CELL_NEIBORS_4D
+    CALL TEST_CELL_GAP
 
 ENDPROGRAM
 
