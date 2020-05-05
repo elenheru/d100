@@ -1,12 +1,21 @@
 PROGRAM main
     use chemical_elements_names_mod
+    use interaction_mod, only : incell_atoms_max
     implicit none
-    integer i
+    integer i,ri
+    integer getrandom_int_fromto_inclusive
 
 
+    call random_seed()
+!
 !    do i = 1,118
-!        print*, "this is element #",i,elements_names(2*i-1:2*i)
+!!        print*, "this is element #",i,elements_names(2*i-1:2*i)
+!        ri = getrandom_int_fromto_inclusive(-10,10)
+!        print*,"slucxajnyj integer [-10,10] = ", ri
 !    enddo
+    !stop "ri test"
+
+
 
     print *, mod(-5,2)
 
@@ -16,11 +25,16 @@ PROGRAM main
 
     print *, "Sejcxas programma budet vyvoditq seriju fajlov v formate xyz dlqa ovito …"
     print *, "cxtoby protestirovatq algoritm razbijenija rascxqotnoj jacxejki na rombododekaedry."
+    print *, "incell atoms max = ", incell_atoms_max
+    print *, ""
+
+    print *, "TODO : V procedure polucxajuhxej spiski atomov"
     print *, ""
 
     call spawn_bcc_rectangular_100
     !CALL TEST_CELL_GAP
-    CALL TEST_CELL_PARTITION
+    !CALL TEST_CELL_PARTITION
+    CALL TEST_CELL_NEIBORS_4D
 
 ENDPROGRAM
 

@@ -40,6 +40,88 @@ subroutine test_cell_partition
 
 endsubroutine test_cell_partition
 
+subroutine test_cell_neibors_4d
+    use array_parameters_mod
+    use interaction_mod
+    implicit none
+    integer i
+
+    print*, "TEST_CELL_NEIBORS_4D zapuhxen"
+    if (atoms__in_total .le. 0) stop "gde atomy? kolicxestvo atomov slisxkom malo."
+
+    do i=8000,30500,125
+
+        cutoff_param=cutoff*1d-4*i
+        call test_shift_lattice
+        call fill_an_by_cn_4d
+        call test_lists_comparison_3d4d
+
+    enddo
+
+    contains
+        subroutine test_lists_comparison_3d4d
+
+            integer :: getrandom_int_fromto_inclusive
+            integer, dimension(3) :: tc_fcc
+            integer, dimension(4) :: tc_pc4d
+
+            integer, dimension(4) :: nc_pc4d
+            integer, dimension(3) :: nc_fcc
+            integer, dimension(4) :: rc_pc4d
+
+            integer, dimension(3,42) :: list_via3d
+            integer, dimension(4,42) :: list_via4d
+            integer :: i
+
+
+            interface
+                function fcc_to_pc4d(fcc_cell) result(pc4d_cell)
+                implicit none
+                integer, dimension(3),intent(in)  :: fcc_cell
+                integer, dimension(4) :: pc4d_cell
+                endfunction fcc_to_pc4d
+            endinterface
+
+
+            tc_fcc(1) = getrandom_int_fromto_inclusive(-4,4)
+            tc_fcc(2) = getrandom_int_fromto_inclusive(-4,4)
+            tc_fcc(3) = getrandom_int_fromto_inclusive(-4,4)
+            tc_pc4d = fcc_to_pc4d(tc_fcc)
+
+
+            print"(A,4(1x,I3.1),A)", "proverka spiskov dlqa jacxejki",tc_pc4d, " pc4d"
+            print"(A,4(1x,I3.1),A)", "proverka spiskov dlqa jacxejki",tc_fcc,-9, "  FCC"
+
+            call list_of_42_nearest_cells_4dpc(&
+            tc_pc4d(1),tc_pc4d(2),tc_pc4d(3),tc_pc4d(4),list_via4d)
+
+            call list_of_42_nearest_cells_fcc(&
+            tc_fcc(1),tc_fcc(2),tc_fcc(3),list_via3d)
+
+            do i=1,42
+
+                nc_fcc = list_via3d(1:3,i)
+                nc_pc4d = fcc_to_pc4d(nc_fcc)
+                rc_pc4d = list_via4d(1:4,i)
+
+                if(&
+                    ( nc_pc4d(1) .ne. rc_pc4d(1) ) .or. &
+                    ( nc_pc4d(2) .ne. rc_pc4d(2) ) .or. &
+                    ( nc_pc4d(3) .ne. rc_pc4d(3) ) .or. &
+                    ( nc_pc4d(4) .ne. rc_pc4d(4) ) &
+                ) then
+                    print*," ne sovpali sosedi "
+                    print*,tc_fcc
+                    print*,tc_pc4d
+                endif
+            enddo
+
+        endsubroutine test_lists_comparison_3d4d
+
+endsubroutine test_cell_neibors_4d
+
+
+
 subroutine test_cell_gap
     use array_parameters_mod
     use interaction_mod
@@ -53,11 +135,10 @@ subroutine test_cell_gap
     !proveritq zadany li koordinaty atomov
     if (atoms__in_total .le. 0) stop "gde atomy? kolicxestvo atomov slisxkom malo."
 
-    do i=9000,195000,500
+    do i=9000,115000,500
 
-        !vybratq cutoff v cikle
         cutoff_param=cutoff*1d-4*i
-        !zapolnitq massiv an_by_cn
+        call test_shift_lattice
         call fill_an_by_cn_4d
         call fill_cn_by_an_4d
         call check_escaped_atom
@@ -90,7 +171,6 @@ subroutine test_shift_lattice
     implicit none
     integer i_atoms
     real(8) :: rs(3)
-    call random_seed()
     call random_number(rs)
     rs=(2d0*rs-(/1d0,1d0,1d0/))*1d-1
     print*,"Resxotka celikom sdvinuta na slucxajnyj vektor: ",rs

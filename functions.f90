@@ -12,6 +12,16 @@ real(8) function distance_inunits_from_origin_fcc(ixy,iyz,izx)
 
 endfunction distance_inunits_from_origin_fcc
 
+integer function getrandom_int_fromto_inclusive(lv,rv)
+    implicit none
+    real(8) rawrandom
+    integer, intent(in) :: lv,rv
+    call random_number(rawrandom)
+    rawrandom =  (1+rv-lv)*rawrandom
+    getrandom_int_fromto_inclusive = floor(rawrandom)+lv
+
+endfunction getrandom_int_fromto_inclusive
+
 logical function test_if_cell_is_close_4d(ixy,iyz,izx,iic)
 
     implicit none

@@ -112,7 +112,6 @@ subroutine fill_an_by_cn_4d
     ! togda ne ponadobitsqa izbytok razmera massiva iz-za afinnosti FCC bazisa
 
 !    hc=sqrt(16d0/27d0)*(cutoff_param) !jesli granq ravna cutoff
-    !hc=sqrt(2d0/9d0)*(cutoff_param) !jesli diametr vpisannoj sfery raven cutoff, 3h
     hc=sqrt(4d0/3d0)*(cutoff_param) !jesli diametr vpisannoj sfery raven cutoff, 2h
     hc_reci=1d0/hc
 
@@ -120,10 +119,8 @@ subroutine fill_an_by_cn_4d
 
         r_at(1:3)=R_curr(1:3,i_atoms)
 
-        !cn_raw(1:3)=nint( hc_reci*3d0*(r_at(1:3)) ) !delim na menqsxije kubiki
         cn_raw(1:3)=nint( hc_reci*2d0*(r_at(1:3)) ) !delim na menqsxije kubiki
 
-        !cellpos(1:3)=(hc/3d0)*cn_raw(1:3) ! ne 3h a 2h
         cellpos(1:3)=(hc/2d0)*cn_raw(1:3)
         if ( mod( sum(cn_raw) ,2 ) .eq. 0 ) then
             !eto kubik vnutri jacxejki, nuzxno razlozxitq koordinaty po bazisu
@@ -526,3 +523,12 @@ subroutine    check_escaped_atom
 269 format( 2( A,I7.2,A,4(I4.1,1x),A,3(F7.3,1x) ),/,A,I3.3,A,F9.5,A,F10.5 )
 
 endsubroutine check_escaped_atom
+
+subroutine get_direct_list(i_a,list)
+    use interaction_mod
+    implicit none
+    integer, intent(in) :: i_a !atom, sosedi kotorogo trebyjetsqa najti
+    integer,dimension(0:incell_atoms_max*12), intent(inout) :: list !atom, sosedi kotorogo trebyjetsqa najti
+
+    stop "obrabotatq slucxaji vyhoda za granicu massiva jacxeek pri ispolqzovanii spiska "
+endsubroutine get_direct_list
