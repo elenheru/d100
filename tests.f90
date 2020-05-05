@@ -135,7 +135,7 @@ subroutine test_cell_gap
     !proveritq zadany li koordinaty atomov
     if (atoms__in_total .le. 0) stop "gde atomy? kolicxestvo atomov slisxkom malo."
 
-    do i=9000,11000,100
+    do i=9000,11000,11
         print*, i, " eto scxqotcxik"
         cutoff_param=cutoff*1d-4*i
         call test_shift_lattice

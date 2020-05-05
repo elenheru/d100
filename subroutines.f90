@@ -5,7 +5,7 @@ subroutine      spawn_bcc_rectangular_100
     real(8) a_half
     integer cnt_x, cnt_y, cnt_z, cnt_q
 
-    print*,cells_xrange,cells_yrange,cells_zrange," eto x y z cells range"
+    !print*,cells_xrange,cells_yrange,cells_zrange," eto x y z cells range"
 
     a_half  = a0*5d-1
     cnt_q = 0

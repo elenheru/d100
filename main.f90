@@ -25,16 +25,16 @@ PROGRAM main
 
     print *, "Sejcxas programma budet vyvoditq seriju fajlov v formate xyz dlqa ovito …"
     print *, "cxtoby protestirovatq algoritm razbijenija rascxqotnoj jacxejki na rombododekaedry."
-    print *, "incell atoms max = ", incell_atoms_max
     print *, ""
 
     print *, "TODO : V procedure polucxajuhxej spiski atomov"
     print *, ""
 
+    call po_wo_parameters
     call spawn_bcc_rectangular_100
     !CALL TEST_CELL_PARTITION
     !CALL TEST_CELL_NEIBORS_4D
-    CALL TEST_CELL_GAP
+    !CALL TEST_CELL_GAP
 
 ENDPROGRAM
 

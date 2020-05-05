@@ -16,11 +16,11 @@ module      interaction_mod
     save
     real(8), parameter ::   cutoff = 3.5d0*2.5 !sphere where the neighbor is
     real(8)            ::   cutoff_param = cutoff
-    real(8), parameter ::   incell_atoms_exceed = 15d-1
+    real(8), parameter ::   incell_atoms_exceed = 1650d-3
     integer, parameter ::   incell_atoms_max = &
         nint( (16d0*sqrt(3d0)/9d0*(cutoff*sqrt(375d-3))**3)/(5d-1*(a0**3))*incell_atoms_exceed )
-    integer an_by_cn(3,atoms_max_array)
-    integer cn_by_an(0:incell_atoms_max,-cells_xrange:cells_xrange,-cells_yrange:cells_yrange,-cells_zrange:cells_zrange)
+!    integer an_by_cn(3,atoms_max_array)
+!    integer cn_by_an(0:incell_atoms_max,-cells_xrange:cells_xrange,-cells_yrange:cells_yrange,-cells_zrange:cells_zrange)
     integer an_by_cn_4d(4,atoms_max_array)
     integer cn_by_an_4d(0:incell_atoms_max,-cells_xrange:cells_xrange,-cells_yrange:cells_yrange,-cells_zrange:cells_zrange,0:3)
     !real(8) distan_list(  neibors_max,atoms_max_array)
@@ -50,7 +50,7 @@ module phys_parameters_mod
     real(8), parameter  ::  aepsilon = 2.8600d-7 !-7 !to avoid match with cells centers positions
     real(8), parameter  ::  poisson=369d-3
     real(8), parameter  ::  burgers=-a0*50d-2*2d0!dislocation is doubled
-    real(8), parameter  ::  core_sign= 1d0
+    !real(8), parameter  ::  core_sign= 1d0
     !core is compressed if sign=1 or decomressed if sign=-1
 endmodule phys_parameters_mod
 

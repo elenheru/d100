@@ -65,3 +65,64 @@ subroutine po_distances_fcc_vs_pc
         enddo
     enddo
 endsubroutine po_distances_fcc_vs_pc
+
+subroutine po_wo_parameters
+    use array_parameters_mod
+    use interaction_mod
+    use phys_parameters_mod
+    implicit none
+    open(1090, file = "parameters.txt")
+
+    print*," parametry takovy (vyvedeno na ekran i v fajl parameters.txt) : "
+    print*,"x_layers = ",x_layers
+    print*,"y_layers = ",y_layers
+    print*,"z_layers = ",z_layers
+    print*,"atoms_max_array = ",atoms_max_array
+    print*,"cells_xrange = ",cells_xrange
+    print*,"cells_yrange = ",cells_yrange
+    print*,"cells_zrange = ",cells_zrange
+
+    print*,"cutoff = ",cutoff
+    print*,"incell_atoms_exceed = ",incell_atoms_exceed
+    print*,"incell_atoms_max = ",incell_atoms_max
+    print*,"a0 = ",a0
+    print*,"aepsilon = ",aepsilon
+    print*,"poisson = ",poisson
+    print*,"burgers = ",burgers
+
+
+
+    write(1090,*) " parametry takovy (vyvedeno na ekran i v fajl parameters.txt) : "
+    write(1090,*) "x_layers = ",x_layers
+    write(1090,*) "y_layers = ",y_layers
+    write(1090,*) "z_layers = ",z_layers
+    write(1090,*) "atoms_max_array = ",atoms_max_array
+    write(1090,*) "cells_xrange = ",cells_xrange
+    write(1090,*) "cells_yrange = ",cells_yrange
+    write(1090,*) "cells_zrange = ",cells_zrange
+
+    write(1090,*) "cutoff = ",cutoff
+    write(1090,*) "incell_atoms_exceed = ",incell_atoms_exceed
+    write(1090,*) "incell_atoms_max = ",incell_atoms_max
+    write(1090,*) "a0 = ",a0
+    write(1090,*) "aepsilon = ",aepsilon
+    write(1090,*) "poisson = ",poisson
+    write(1090,*) "burgers = ",burgers
+
+!    print*,
+!    print*,
+!    print*,
+!    print*,
+!    print*,
+!    print*,
+!    print*,
+!    print*,
+!    print*,
+!    print*,
+!    print*,
+!    print*,
+!    print*,
+
+endsubroutine po_wo_parameters
+
+
