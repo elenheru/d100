@@ -24,12 +24,13 @@ subroutine test_cell_partition
         !PRINT"(A,3(I7.4,1X))", "(/0,7,2 /)+(/-1,-4,-3/) = ", (/0,7,2 /)+(/-1,-4,-3/)
         !STOP ""
 
-    do i=8000,145000,250
+    do i=8000,30500,125
 
         !vybratq cutoff v cikle
-        cutoff_param=cutoff*25d-5*i
+        cutoff_param=cutoff*1d-4*i
 
         !zapolnitq massiv an_by_cn
+        call test_shift_lattice
         call fill_an_by_cn_4d
 
         call wo_xyz_rhcells_4d
@@ -48,31 +49,17 @@ subroutine test_cell_gap
     !INTEGER, DIMENSION(3,42) :: LIST
     print*, "TEST_CELL_GAP zapuhxen"
 
-    !real(8) R_curr(1,cnt_q)
-    !integer an_by_cn(3,atoms_max_array)
-    !integer cn_by_an(0:neibors_max,atoms_max_array)
 
     !proveritq zadany li koordinaty atomov
     if (atoms__in_total .le. 0) stop "gde atomy? kolicxestvo atomov slisxkom malo."
-
-
-!        CALL LIST_OF_42_NEAREST_CELLS_FCC(0,0,0,LIST)
-!        DO I=1,42
-!            PRINT*,LIST(1:3,I)
-!        ENDDO
-        !LLL=TEST_IF_CELL_IS_CLOSE(0,0,1)
-        !PRINT"(A,L2)", "---", LLL
-        !PRINT"(A,3(I7.4,1X))", "(/0,7,2 /)+(/-1,-4,-3/) = ", (/0,7,2 /)+(/-1,-4,-3/)
-        !STOP ""
 
     do i=9000,195000,500
 
         !vybratq cutoff v cikle
         cutoff_param=cutoff*1d-4*i
-
         !zapolnitq massiv an_by_cn
-        call fill_an_by_cn
-        call fill_cn_by_an
+        call fill_an_by_cn_4d
+        call fill_cn_by_an_4d
         call check_escaped_atom
         call wo_xyz_rhcells_4d
         !STOP "filling an by cn test"
@@ -81,6 +68,7 @@ subroutine test_cell_gap
 endsubroutine test_cell_gap
 
 subroutine po_distances_fcc_vs_pc
+    implicit none
     integer :: ixy,iyz,izx,w
     real :: dist
     w=1
@@ -96,3 +84,19 @@ subroutine po_distances_fcc_vs_pc
         enddo
     enddo
 endsubroutine po_distances_fcc_vs_pc
+
+subroutine test_shift_lattice
+    use positions_mod
+    implicit none
+    integer i_atoms
+    real(8) :: rs(3)
+    call random_seed()
+    call random_number(rs)
+    rs=(2d0*rs-(/1d0,1d0,1d0/))*1d-1
+    print*,"Resxotka celikom sdvinuta na slucxajnyj vektor: ",rs
+    do i_atoms=1,atoms__in_total
+        R_curr(1:3,i_atoms)=R_curr(1:3,i_atoms)+rs(1:3)
+    enddo
+    !R_perf=R_curr
+
+endsubroutine test_shift_lattice

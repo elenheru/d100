@@ -59,7 +59,7 @@ subroutine      wo_xyz_rhcells_4d !#196
     write(104,*) "image of relaxation # ",xyz__wocounter," rhombic dodecahedron edge is ", cutoff_param
 
     do i_atoms=1,atoms__in_total
-        !cn = 1 + mod( abs((an_by_cn(1,i_atoms) + 9*an_by_cn(2,i_atoms) + 81*an_by_cn(3,i_atoms))) , 52)
+        !cn = 1 + mod( abs((an_by_cn_4d(1,i_atoms) + 5*an_by_cn_4d(2,i_atoms) + 13*an_by_cn_4d(3,i_atoms))) , 52)
         cn = an_by_cn_4d(4,i_atoms) + 1
 !        if (.not.test_if_cell_is_close_4d(&
 !                an_by_cn_4d(1,i_atoms),&
@@ -112,16 +112,19 @@ subroutine fill_an_by_cn_4d
     ! togda ne ponadobitsqa izbytok razmera massiva iz-za afinnosti FCC bazisa
 
 !    hc=sqrt(16d0/27d0)*(cutoff_param) !jesli granq ravna cutoff
-    hc=sqrt(2d0/9d0)*(cutoff_param) !jesli diametr vpisannoj sfery raven cutoff
+    !hc=sqrt(2d0/9d0)*(cutoff_param) !jesli diametr vpisannoj sfery raven cutoff, 3h
+    hc=sqrt(4d0/3d0)*(cutoff_param) !jesli diametr vpisannoj sfery raven cutoff, 2h
     hc_reci=1d0/hc
 
     do i_atoms=1,atoms__in_total
 
         r_at(1:3)=R_curr(1:3,i_atoms)
 
-        cn_raw(1:3)=nint( hc_reci*3d0*(r_at(1:3)) ) !delim na menqsxije kubiki
+        !cn_raw(1:3)=nint( hc_reci*3d0*(r_at(1:3)) ) !delim na menqsxije kubiki
+        cn_raw(1:3)=nint( hc_reci*2d0*(r_at(1:3)) ) !delim na menqsxije kubiki
 
-        cellpos(1:3)=(hc/3d0)*cn_raw(1:3)
+        !cellpos(1:3)=(hc/3d0)*cn_raw(1:3) ! ne 3h a 2h
+        cellpos(1:3)=(hc/2d0)*cn_raw(1:3)
         if ( mod( sum(cn_raw) ,2 ) .eq. 0 ) then
             !eto kubik vnutri jacxejki, nuzxno razlozxitq koordinaty po bazisu
 
@@ -200,7 +203,7 @@ subroutine fill_an_by_cn_4d
                 ) then
                 cn_raw(3)=cn_raw(3)-1
             else
-                print*,"Tablica istinnosti ne sovpala ni s kem. Atom ",i_atoms
+                print*,"Tablica istinnosti ne sovpala ni s kem. Atom ",i_atoms,r_at(1:3)
                 print "(1x,6L2)", our
                 STOP "tablica ne dolzxna proverqatsqa dlqa nerelevantnoj pary koordinat"
             endif
@@ -281,51 +284,181 @@ subroutine list_of_42_nearest_cells_4dpc(ixy,iyz,izx,icell,list)
     origin(1)=ixy
     origin(2)=iyz
     origin(3)=izx
-    origin(4)=icell
+    origin(4)=0!icell
 
-    list(1:4, 1)=origin(1:4)+(/ 0, 1,-1, 3/)!fcc_to_pc4d( (/ 2, 0,-1/) )!_FCC  ;[[ 1, 2,-1]]_PC ; Distance is        2.4495
-    list(1:4, 2)=origin(1:4)+(/-1,-1, 0, 3/)!fcc_to_pc4d( (/-2, 0, 1/) )!_FCC  ;[[-1,-2, 1]]_PC ; Distance is        2.4495
-    list(1:4, 3)=origin(1:4)+(/-1,-1, 0, 2/)!fcc_to_pc4d( (/-2, 1, 0/) )!_FCC  ;[[-2,-1, 1]]_PC ; Distance is        2.4495
-    list(1:4, 4)=origin(1:4)+(/-1,-1, 1, 1/)!fcc_to_pc4d( (/-2, 1, 1/) )!_FCC  ;[[-1,-1, 2]]_PC ; Distance is        2.4495
-    list(1:4, 5)=origin(1:4)+(/-1,-1,-1, 3/)!fcc_to_pc4d( (/-1,-1, 0/) )!_FCC  ;[[-1,-2,-1]]_PC ; Distance is        2.4495
-    list(1:4, 6)=origin(1:4)+(/ 0,-1, 0, 0/)!fcc_to_pc4d( (/-1,-1, 1/) )!_FCC  ;[[ 0,-2, 0]]_PC ; Distance is     2.0000
-    list(1:4, 7)=origin(1:4)+(/ 0,-1, 0, 3/)!fcc_to_pc4d( (/-1,-1, 2/) )!_FCC  ;[[ 1,-2, 1]]_PC ; Distance is        2.4495
-    list(1:4, 8)=origin(1:4)+(/-1,-1,-1, 2/)!fcc_to_pc4d( (/-1, 0,-1/) )!_FCC  ;[[-2,-1,-1]]_PC ; Distance is        2.4495
-    list(1:4, 9)=origin(1:4)+(/-1,-1, 0, 1/)!fcc_to_pc4d( (/-1, 0, 0/) )!_FCC  ;[[-1,-1, 0]]_PC ; Distance is 1.4142
-    list(1:4,10)=origin(1:4)+(/ 0,-1, 0, 2/)!fcc_to_pc4d( (/-1, 0, 1/) )!_FCC  ;[[ 0,-1, 1]]_PC ; Distance is 1.4142
-    list(1:4,11)=origin(1:4)+(/ 0,-1, 1, 1/)!fcc_to_pc4d( (/-1, 0, 2/) )!_FCC  ;[[ 1,-1, 2]]_PC ; Distance is        2.4495
-    list(1:4,12)=origin(1:4)+(/-1, 0, 0, 0/)!fcc_to_pc4d( (/-1, 1,-1/) )!_FCC  ;[[-2, 0, 0]]_PC ; Distance is     2.0000
-    list(1:4,13)=origin(1:4)+(/-1, 0, 0, 3/)!fcc_to_pc4d( (/-1, 1, 0/) )!_FCC  ;[[-1, 0, 1]]_PC ; Distance is 1.4142
-    list(1:4,14)=origin(1:4)+(/ 0, 0, 1, 0/)!fcc_to_pc4d( (/-1, 1, 1/) )!_FCC  ;[[ 0, 0, 2]]_PC ; Distance is     2.0000
-    list(1:4,15)=origin(1:4)+(/-1, 0, 0, 2/)!fcc_to_pc4d( (/-1, 2,-1/) )!_FCC  ;[[-2, 1, 1]]_PC ; Distance is        2.4495
-    list(1:4,16)=origin(1:4)+(/-1, 0, 1, 1/)!fcc_to_pc4d( (/-1, 2, 0/) )!_FCC  ;[[-1, 1, 2]]_PC ; Distance is        2.4495
-    list(1:4,17)=origin(1:4)+(/ 0,-1,-1, 3/)!fcc_to_pc4d( (/ 0,-2, 1/) )!_FCC  ;[[ 1,-2,-1]]_PC ; Distance is        2.4495
-    list(1:4,18)=origin(1:4)+(/-1,-1,-1, 1/)!fcc_to_pc4d( (/ 0,-1,-1/) )!_FCC  ;[[-1,-1,-2]]_PC ; Distance is        2.4495
-    list(1:4,19)=origin(1:4)+(/ 0,-1,-1, 2/)!fcc_to_pc4d( (/ 0,-1, 0/) )!_FCC  ;[[ 0,-1,-1]]_PC ; Distance is 1.4142
-    list(1:4,20)=origin(1:4)+(/ 0,-1, 0, 1/)!fcc_to_pc4d( (/ 0,-1, 1/) )!_FCC  ;[[ 1,-1, 0]]_PC ; Distance is 1.4142
-    list(1:4,21)=origin(1:4)+(/ 1,-1, 0, 2/)!fcc_to_pc4d( (/ 0,-1, 2/) )!_FCC  ;[[ 2,-1, 1]]_PC ; Distance is        2.4495
-    list(1:4,22)=origin(1:4)+(/-1, 0,-1, 3/)!fcc_to_pc4d( (/ 0, 0,-1/) )!_FCC  ;[[-1, 0,-1]]_PC ; Distance is 1.4142
-    !list(1:4,1)=origin(1:4)+(/ 0, 0, 0, 0/)!fcc_to_pc4d( (/ 0, 0, 0/) )!_FCC  ;[[ 0, 0, 0]]_PC ; Distance is0.0000
-    list(1:4,23)=origin(1:4)+(/ 0, 0, 0, 3/)!fcc_to_pc4d( (/ 0, 0, 1/) )!_FCC  ;[[ 1, 0, 1]]_PC ; Distance is 1.4142
-    list(1:4,24)=origin(1:4)+(/-1, 0,-1, 2/)!fcc_to_pc4d( (/ 0, 1,-2/) )!_FCC  ;[[-2, 1,-1]]_PC ; Distance is        2.4495
-    list(1:4,25)=origin(1:4)+(/-1, 0, 0, 1/)!fcc_to_pc4d( (/ 0, 1,-1/) )!_FCC  ;[[-1, 1, 0]]_PC ; Distance is 1.4142
-    list(1:4,26)=origin(1:4)+(/ 0, 0, 0, 2/)!fcc_to_pc4d( (/ 0, 1, 0/) )!_FCC  ;[[ 0, 1, 1]]_PC ; Distance is 1.4142
-    list(1:4,27)=origin(1:4)+(/ 0, 0, 1, 1/)!fcc_to_pc4d( (/ 0, 1, 1/) )!_FCC  ;[[ 1, 1, 2]]_PC ; Distance is        2.4495
-    list(1:4,28)=origin(1:4)+(/-1, 1, 0, 3/)!fcc_to_pc4d( (/ 0, 2,-1/) )!_FCC  ;[[-1, 2, 1]]_PC ; Distance is        2.4495
-    list(1:4,29)=origin(1:4)+(/ 0,-1,-1, 1/)!fcc_to_pc4d( (/ 1,-2, 0/) )!_FCC  ;[[ 1,-1,-2]]_PC ; Distance is        2.4495
-    list(1:4,30)=origin(1:4)+(/ 1,-1,-1, 2/)!fcc_to_pc4d( (/ 1,-2, 1/) )!_FCC  ;[[ 2,-1,-1]]_PC ; Distance is        2.4495
-    list(1:4,31)=origin(1:4)+(/ 0, 0,-1, 0/)!fcc_to_pc4d( (/ 1,-1,-1/) )!_FCC  ;[[ 0, 0,-2]]_PC ; Distance is     2.0000
-    list(1:4,32)=origin(1:4)+(/ 0, 0,-1, 3/)!fcc_to_pc4d( (/ 1,-1, 0/) )!_FCC  ;[[ 1, 0,-1]]_PC ; Distance is 1.4142
-    list(1:4,33)=origin(1:4)+(/ 1, 0, 0, 0/)!fcc_to_pc4d( (/ 1,-1, 1/) )!_FCC  ;[[ 2, 0, 0]]_PC ; Distance is     2.0000
-    list(1:4,34)=origin(1:4)+(/-1, 0,-1, 1/)!fcc_to_pc4d( (/ 1, 0,-2/) )!_FCC  ;[[-1, 1,-2]]_PC ; Distance is        2.4495
-    list(1:4,35)=origin(1:4)+(/ 0, 0,-1, 2/)!fcc_to_pc4d( (/ 1, 0,-1/) )!_FCC  ;[[ 0, 1,-1]]_PC ; Distance is 1.4142
-    list(1:4,36)=origin(1:4)+(/ 0, 0, 0, 1/)!fcc_to_pc4d( (/ 1, 0, 0/) )!_FCC  ;[[ 1, 1, 0]]_PC ; Distance is 1.4142
-    list(1:4,37)=origin(1:4)+(/ 1, 0, 0, 2/)!fcc_to_pc4d( (/ 1, 0, 1/) )!_FCC  ;[[ 2, 1, 1]]_PC ; Distance is        2.4495
-    list(1:4,38)=origin(1:4)+(/-1, 1,-1, 3/)!fcc_to_pc4d( (/ 1, 1,-2/) )!_FCC  ;[[-1, 2,-1]]_PC ; Distance is        2.4495
-    list(1:4,39)=origin(1:4)+(/ 0, 1, 0, 0/)!fcc_to_pc4d( (/ 1, 1,-1/) )!_FCC  ;[[ 0, 2, 0]]_PC ; Distance is     2.0000
-    list(1:4,40)=origin(1:4)+(/ 0, 1, 0, 3/)!fcc_to_pc4d( (/ 1, 1, 0/) )!_FCC  ;[[ 1, 2, 1]]_PC ; Distance is        2.4495
-    list(1:4,41)=origin(1:4)+(/ 0, 0,-1, 1/)!fcc_to_pc4d( (/ 2,-1,-1/) )!_FCC  ;[[ 1, 1,-2]]_PC ; Distance is        2.4495
-    list(1:4,42)=origin(1:4)+(/ 1, 0,-1, 2/)!fcc_to_pc4d( (/ 2,-1, 0/) )!_FCC  ;[[ 2, 1,-1]]_PC ; Distance is        2.4495
+    if(icell .eq. 0) then
+        list(1:4, 1)=origin(1:4)+(/  0,  1, -1,  3/)!_FCC  ;[[ 1, 2,-1]]_PC ; Distance is        2.4495
+        list(1:4, 2)=origin(1:4)+(/ -1, -1,  0,  3/)!_FCC  ;[[-1,-2, 1]]_PC ; Distance is        2.4495
+        list(1:4, 3)=origin(1:4)+(/ -1, -1,  0,  2/)!_FCC  ;[[-2,-1, 1]]_PC ; Distance is        2.4495
+        list(1:4, 4)=origin(1:4)+(/ -1, -1,  1,  1/)!_FCC  ;[[-1,-1, 2]]_PC ; Distance is        2.4495
+        list(1:4, 5)=origin(1:4)+(/ -1, -1, -1,  3/)!_FCC  ;[[-1,-2,-1]]_PC ; Distance is        2.4495
+        list(1:4, 6)=origin(1:4)+(/  0, -1,  0,  0/)!_FCC  ;[[ 0,-2, 0]]_PC ; Distance is     2.0000
+        list(1:4, 7)=origin(1:4)+(/  0, -1,  0,  3/)!_FCC  ;[[ 1,-2, 1]]_PC ; Distance is        2.4495
+        list(1:4, 8)=origin(1:4)+(/ -1, -1, -1,  2/)!_FCC  ;[[-2,-1,-1]]_PC ; Distance is        2.4495
+        list(1:4, 9)=origin(1:4)+(/ -1, -1,  0,  1/)!_FCC  ;[[-1,-1, 0]]_PC ; Distance is 1.4142
+        list(1:4,10)=origin(1:4)+(/  0, -1,  0,  2/)!_FCC  ;[[ 0,-1, 1]]_PC ; Distance is 1.4142
+        list(1:4,11)=origin(1:4)+(/  0, -1,  1,  1/)!_FCC  ;[[ 1,-1, 2]]_PC ; Distance is        2.4495
+        list(1:4,12)=origin(1:4)+(/ -1,  0,  0,  0/)!_FCC  ;[[-2, 0, 0]]_PC ; Distance is     2.0000
+        list(1:4,13)=origin(1:4)+(/ -1,  0,  0,  3/)!_FCC  ;[[-1, 0, 1]]_PC ; Distance is 1.4142
+        list(1:4,14)=origin(1:4)+(/  0,  0,  1,  0/)!_FCC  ;[[ 0, 0, 2]]_PC ; Distance is     2.0000
+        list(1:4,15)=origin(1:4)+(/ -1,  0,  0,  2/)!_FCC  ;[[-2, 1, 1]]_PC ; Distance is        2.4495
+        list(1:4,16)=origin(1:4)+(/ -1,  0,  1,  1/)!_FCC  ;[[-1, 1, 2]]_PC ; Distance is        2.4495
+        list(1:4,17)=origin(1:4)+(/  0, -1, -1,  3/)!_FCC  ;[[ 1,-2,-1]]_PC ; Distance is        2.4495
+        list(1:4,18)=origin(1:4)+(/ -1, -1, -1,  1/)!_FCC  ;[[-1,-1,-2]]_PC ; Distance is        2.4495
+        list(1:4,19)=origin(1:4)+(/  0, -1, -1,  2/)!_FCC  ;[[ 0,-1,-1]]_PC ; Distance is 1.4142
+        list(1:4,20)=origin(1:4)+(/  0, -1,  0,  1/)!_FCC  ;[[ 1,-1, 0]]_PC ; Distance is 1.4142
+        list(1:4,21)=origin(1:4)+(/  1, -1,  0,  2/)!_FCC  ;[[ 2,-1, 1]]_PC ; Distance is        2.4495
+        list(1:4,22)=origin(1:4)+(/ -1,  0, -1,  3/)!_FCC  ;[[-1, 0,-1]]_PC ; Distance is 1.4142 !list(1:4,1)=origin(1:4)+fcc_to_pc4d( (/ 0, 0, 0/) )!_FCC  ;[[ 0, 0, 0]]_PC ; Distance is0.0000
+        list(1:4,23)=origin(1:4)+(/  0,  0,  0,  3/)!_FCC  ;[[ 1, 0, 1]]_PC ; Distance is 1.4142
+        list(1:4,24)=origin(1:4)+(/ -1,  0, -1,  2/)!_FCC  ;[[-2, 1,-1]]_PC ; Distance is        2.4495
+        list(1:4,25)=origin(1:4)+(/ -1,  0,  0,  1/)!_FCC  ;[[-1, 1, 0]]_PC ; Distance is 1.4142
+        list(1:4,26)=origin(1:4)+(/  0,  0,  0,  2/)!_FCC  ;[[ 0, 1, 1]]_PC ; Distance is 1.4142
+        list(1:4,27)=origin(1:4)+(/  0,  0,  1,  1/)!_FCC  ;[[ 1, 1, 2]]_PC ; Distance is        2.4495
+        list(1:4,28)=origin(1:4)+(/ -1,  1,  0,  3/)!_FCC  ;[[-1, 2, 1]]_PC ; Distance is        2.4495
+        list(1:4,29)=origin(1:4)+(/  0, -1, -1,  1/)!_FCC  ;[[ 1,-1,-2]]_PC ; Distance is        2.4495
+        list(1:4,30)=origin(1:4)+(/  1, -1, -1,  2/)!_FCC  ;[[ 2,-1,-1]]_PC ; Distance is        2.4495
+        list(1:4,31)=origin(1:4)+(/  0,  0, -1,  0/)!_FCC  ;[[ 0, 0,-2]]_PC ; Distance is     2.0000
+        list(1:4,32)=origin(1:4)+(/  0,  0, -1,  3/)!_FCC  ;[[ 1, 0,-1]]_PC ; Distance is 1.4142
+        list(1:4,33)=origin(1:4)+(/  1,  0,  0,  0/)!_FCC  ;[[ 2, 0, 0]]_PC ; Distance is     2.0000
+        list(1:4,34)=origin(1:4)+(/ -1,  0, -1,  1/)!_FCC  ;[[-1, 1,-2]]_PC ; Distance is        2.4495
+        list(1:4,35)=origin(1:4)+(/  0,  0, -1,  2/)!_FCC  ;[[ 0, 1,-1]]_PC ; Distance is 1.4142
+        list(1:4,36)=origin(1:4)+(/  0,  0,  0,  1/)!_FCC  ;[[ 1, 1, 0]]_PC ; Distance is 1.4142
+        list(1:4,37)=origin(1:4)+(/  1,  0,  0,  2/)!_FCC  ;[[ 2, 1, 1]]_PC ; Distance is        2.4495
+        list(1:4,38)=origin(1:4)+(/ -1,  1, -1,  3/)!_FCC  ;[[-1, 2,-1]]_PC ; Distance is        2.4495
+        list(1:4,39)=origin(1:4)+(/  0,  1,  0,  0/)!_FCC  ;[[ 0, 2, 0]]_PC ; Distance is     2.0000
+        list(1:4,40)=origin(1:4)+(/  0,  1,  0,  3/)!_FCC  ;[[ 1, 2, 1]]_PC ; Distance is        2.4495
+        list(1:4,41)=origin(1:4)+(/  0,  0, -1,  1/)!_FCC  ;[[ 1, 1,-2]]_PC ; Distance is        2.4495
+        list(1:4,42)=origin(1:4)+(/  1,  0, -1,  2/)!_FCC  ;[[ 2, 1,-1]]_PC ; Distance is        2.4495
+    elseif(icell .eq. 1) then
+        list(1:4, 1)=origin(1:4)+(/  1,  1, -1,  2/)!_FCC  ;[[ 1, 2,-1]]_PC ; Distance is        2.4495
+        list(1:4, 2)=origin(1:4)+(/  0, -1,  0,  2/)!_FCC  ;[[-1,-2, 1]]_PC ; Distance is        2.4495
+        list(1:4, 3)=origin(1:4)+(/ -1,  0,  0,  3/)!_FCC  ;[[-2,-1, 1]]_PC ; Distance is        2.4495
+        list(1:4, 4)=origin(1:4)+(/  0,  0,  1,  0/)!_FCC  ;[[-1,-1, 2]]_PC ; Distance is        2.4495
+        list(1:4, 5)=origin(1:4)+(/  0, -1, -1,  2/)!_FCC  ;[[-1,-2,-1]]_PC ; Distance is        2.4495
+        list(1:4, 6)=origin(1:4)+(/  0, -1,  0,  1/)!_FCC  ;[[ 0,-2, 0]]_PC ; Distance is     2.0000
+        list(1:4, 7)=origin(1:4)+(/  1, -1,  0,  2/)!_FCC  ;[[ 1,-2, 1]]_PC ; Distance is        2.4495
+        list(1:4, 8)=origin(1:4)+(/ -1,  0, -1,  3/)!_FCC  ;[[-2,-1,-1]]_PC ; Distance is        2.4495
+        list(1:4, 9)=origin(1:4)+(/  0,  0,  0,  0/)!_FCC  ;[[-1,-1, 0]]_PC ; Distance is 1.4142
+        list(1:4,10)=origin(1:4)+(/  0,  0,  0,  3/)!_FCC  ;[[ 0,-1, 1]]_PC ; Distance is 1.4142
+        list(1:4,11)=origin(1:4)+(/  1,  0,  1,  0/)!_FCC  ;[[ 1,-1, 2]]_PC ; Distance is        2.4495
+        list(1:4,12)=origin(1:4)+(/ -1,  0,  0,  1/)!_FCC  ;[[-2, 0, 0]]_PC ; Distance is     2.0000
+        list(1:4,13)=origin(1:4)+(/  0,  0,  0,  2/)!_FCC  ;[[-1, 0, 1]]_PC ; Distance is 1.4142
+        list(1:4,14)=origin(1:4)+(/  0,  0,  1,  1/)!_FCC  ;[[ 0, 0, 2]]_PC ; Distance is     2.0000
+        list(1:4,15)=origin(1:4)+(/ -1,  1,  0,  3/)!_FCC  ;[[-2, 1, 1]]_PC ; Distance is        2.4495
+        list(1:4,16)=origin(1:4)+(/  0,  1,  1,  0/)!_FCC  ;[[-1, 1, 2]]_PC ; Distance is        2.4495
+        list(1:4,17)=origin(1:4)+(/  1, -1, -1,  2/)!_FCC  ;[[ 1,-2,-1]]_PC ; Distance is        2.4495
+        list(1:4,18)=origin(1:4)+(/  0,  0, -1,  0/)!_FCC  ;[[-1,-1,-2]]_PC ; Distance is        2.4495
+        list(1:4,19)=origin(1:4)+(/  0,  0, -1,  3/)!_FCC  ;[[ 0,-1,-1]]_PC ; Distance is 1.4142
+        list(1:4,20)=origin(1:4)+(/  1,  0,  0,  0/)!_FCC  ;[[ 1,-1, 0]]_PC ; Distance is 1.4142
+        list(1:4,21)=origin(1:4)+(/  1,  0,  0,  3/)!_FCC  ;[[ 2,-1, 1]]_PC ; Distance is        2.4495
+        list(1:4,22)=origin(1:4)+(/  0,  0, -1,  2/)!_FCC  ;[[-1, 0,-1]]_PC ; Distance is 1.4142!list(1:4,1)=origin(1:4)+fcc_to_pc4d( (/ 0, 0, 0/) )!_FCC  ;[[ 0, 0, 0]]_PC ; Distance is0.0000
+        list(1:4,23)=origin(1:4)+(/  1,  0,  0,  2/)!_FCC  ;[[ 1, 0, 1]]_PC ; Distance is 1.4142
+        list(1:4,24)=origin(1:4)+(/ -1,  1, -1,  3/)!_FCC  ;[[-2, 1,-1]]_PC ; Distance is        2.4495
+        list(1:4,25)=origin(1:4)+(/  0,  1,  0,  0/)!_FCC  ;[[-1, 1, 0]]_PC ; Distance is 1.4142
+        list(1:4,26)=origin(1:4)+(/  0,  1,  0,  3/)!_FCC  ;[[ 0, 1, 1]]_PC ; Distance is 1.4142
+        list(1:4,27)=origin(1:4)+(/  1,  1,  1,  0/)!_FCC  ;[[ 1, 1, 2]]_PC ; Distance is        2.4495
+        list(1:4,28)=origin(1:4)+(/  0,  1,  0,  2/)!_FCC  ;[[-1, 2, 1]]_PC ; Distance is        2.4495
+        list(1:4,29)=origin(1:4)+(/  1,  0, -1,  0/)!_FCC  ;[[ 1,-1,-2]]_PC ; Distance is        2.4495
+        list(1:4,30)=origin(1:4)+(/  1,  0, -1,  3/)!_FCC  ;[[ 2,-1,-1]]_PC ; Distance is        2.4495
+        list(1:4,31)=origin(1:4)+(/  0,  0, -1,  1/)!_FCC  ;[[ 0, 0,-2]]_PC ; Distance is     2.0000
+        list(1:4,32)=origin(1:4)+(/  1,  0, -1,  2/)!_FCC  ;[[ 1, 0,-1]]_PC ; Distance is 1.4142
+        list(1:4,33)=origin(1:4)+(/  1,  0,  0,  1/)!_FCC  ;[[ 2, 0, 0]]_PC ; Distance is     2.0000
+        list(1:4,34)=origin(1:4)+(/  0,  1, -1,  0/)!_FCC  ;[[-1, 1,-2]]_PC ; Distance is        2.4495
+        list(1:4,35)=origin(1:4)+(/  0,  1, -1,  3/)!_FCC  ;[[ 0, 1,-1]]_PC ; Distance is 1.4142
+        list(1:4,36)=origin(1:4)+(/  1,  1,  0,  0/)!_FCC  ;[[ 1, 1, 0]]_PC ; Distance is 1.4142
+        list(1:4,37)=origin(1:4)+(/  1,  1,  0,  3/)!_FCC  ;[[ 2, 1, 1]]_PC ; Distance is        2.4495
+        list(1:4,38)=origin(1:4)+(/  0,  1, -1,  2/)!_FCC  ;[[-1, 2,-1]]_PC ; Distance is        2.4495
+        list(1:4,39)=origin(1:4)+(/  0,  1,  0,  1/)!_FCC  ;[[ 0, 2, 0]]_PC ; Distance is     2.0000
+        list(1:4,40)=origin(1:4)+(/  1,  1,  0,  2/)!_FCC  ;[[ 1, 2, 1]]_PC ; Distance is        2.4495
+        list(1:4,41)=origin(1:4)+(/  1,  1, -1,  0/)!_FCC  ;[[ 1, 1,-2]]_PC ; Distance is        2.4495
+        list(1:4,42)=origin(1:4)+(/  1,  1, -1,  3/)!_FCC  ;[[ 2, 1,-1]]_PC ; Distance is        2.4495
+    elseif(icell .eq. 2) then
+        list(1:4, 1)=origin(1:4)+(/  0,  1,  0,  1/)!_FCC  ;[[ 1, 2,-1]]_PC ; Distance is        2.4495
+        list(1:4, 2)=origin(1:4)+(/ -1, -1,  1,  1/)!_FCC  ;[[-1,-2, 1]]_PC ; Distance is        2.4495
+        list(1:4, 3)=origin(1:4)+(/ -1,  0,  1,  0/)!_FCC  ;[[-2,-1, 1]]_PC ; Distance is        2.4495
+        list(1:4, 4)=origin(1:4)+(/ -1,  0,  1,  3/)!_FCC  ;[[-1,-1, 2]]_PC ; Distance is        2.4495
+        list(1:4, 5)=origin(1:4)+(/ -1, -1,  0,  1/)!_FCC  ;[[-1,-2,-1]]_PC ; Distance is        2.4495
+        list(1:4, 6)=origin(1:4)+(/  0, -1,  0,  2/)!_FCC  ;[[ 0,-2, 0]]_PC ; Distance is     2.0000
+        list(1:4, 7)=origin(1:4)+(/  0, -1,  1,  1/)!_FCC  ;[[ 1,-2, 1]]_PC ; Distance is        2.4495
+        list(1:4, 8)=origin(1:4)+(/ -1,  0,  0,  0/)!_FCC  ;[[-2,-1,-1]]_PC ; Distance is        2.4495
+        list(1:4, 9)=origin(1:4)+(/ -1,  0,  0,  3/)!_FCC  ;[[-1,-1, 0]]_PC ; Distance is 1.4142
+        list(1:4,10)=origin(1:4)+(/  0,  0,  1,  0/)!_FCC  ;[[ 0,-1, 1]]_PC ; Distance is 1.4142
+        list(1:4,11)=origin(1:4)+(/  0,  0,  1,  3/)!_FCC  ;[[ 1,-1, 2]]_PC ; Distance is        2.4495
+        list(1:4,12)=origin(1:4)+(/ -1,  0,  0,  2/)!_FCC  ;[[-2, 0, 0]]_PC ; Distance is     2.0000
+        list(1:4,13)=origin(1:4)+(/ -1,  0,  1,  1/)!_FCC  ;[[-1, 0, 1]]_PC ; Distance is 1.4142
+        list(1:4,14)=origin(1:4)+(/  0,  0,  1,  2/)!_FCC  ;[[ 0, 0, 2]]_PC ; Distance is     2.0000
+        list(1:4,15)=origin(1:4)+(/ -1,  1,  1,  0/)!_FCC  ;[[-2, 1, 1]]_PC ; Distance is        2.4495
+        list(1:4,16)=origin(1:4)+(/ -1,  1,  1,  3/)!_FCC  ;[[-1, 1, 2]]_PC ; Distance is        2.4495
+        list(1:4,17)=origin(1:4)+(/  0, -1,  0,  1/)!_FCC  ;[[ 1,-2,-1]]_PC ; Distance is        2.4495
+        list(1:4,18)=origin(1:4)+(/ -1,  0, -1,  3/)!_FCC  ;[[-1,-1,-2]]_PC ; Distance is        2.4495
+        list(1:4,19)=origin(1:4)+(/  0,  0,  0,  0/)!_FCC  ;[[ 0,-1,-1]]_PC ; Distance is 1.4142
+        list(1:4,20)=origin(1:4)+(/  0,  0,  0,  3/)!_FCC  ;[[ 1,-1, 0]]_PC ; Distance is 1.4142
+        list(1:4,21)=origin(1:4)+(/  1,  0,  1,  0/)!_FCC  ;[[ 2,-1, 1]]_PC ; Distance is        2.4495
+        list(1:4,22)=origin(1:4)+(/ -1,  0,  0,  1/)!_FCC  ;[[-1, 0,-1]]_PC ; Distance is 1.4142!list(1:4,1)=origin(1:4)+fcc_to_pc4d( (/ 0, 0, 0/) )!_FCC  ;[[ 0, 0, 0]]_PC ; Distance is0.0000
+        list(1:4,23)=origin(1:4)+(/  0,  0,  1,  1/)!_FCC  ;[[ 1, 0, 1]]_PC ; Distance is 1.4142
+        list(1:4,24)=origin(1:4)+(/ -1,  1,  0,  0/)!_FCC  ;[[-2, 1,-1]]_PC ; Distance is        2.4495
+        list(1:4,25)=origin(1:4)+(/ -1,  1,  0,  3/)!_FCC  ;[[-1, 1, 0]]_PC ; Distance is 1.4142
+        list(1:4,26)=origin(1:4)+(/  0,  1,  1,  0/)!_FCC  ;[[ 0, 1, 1]]_PC ; Distance is 1.4142
+        list(1:4,27)=origin(1:4)+(/  0,  1,  1,  3/)!_FCC  ;[[ 1, 1, 2]]_PC ; Distance is        2.4495
+        list(1:4,28)=origin(1:4)+(/ -1,  1,  1,  1/)!_FCC  ;[[-1, 2, 1]]_PC ; Distance is        2.4495
+        list(1:4,29)=origin(1:4)+(/  0,  0, -1,  3/)!_FCC  ;[[ 1,-1,-2]]_PC ; Distance is        2.4495
+        list(1:4,30)=origin(1:4)+(/  1,  0,  0,  0/)!_FCC  ;[[ 2,-1,-1]]_PC ; Distance is        2.4495
+        list(1:4,31)=origin(1:4)+(/  0,  0, -1,  2/)!_FCC  ;[[ 0, 0,-2]]_PC ; Distance is     2.0000
+        list(1:4,32)=origin(1:4)+(/  0,  0,  0,  1/)!_FCC  ;[[ 1, 0,-1]]_PC ; Distance is 1.4142
+        list(1:4,33)=origin(1:4)+(/  1,  0,  0,  2/)!_FCC  ;[[ 2, 0, 0]]_PC ; Distance is     2.0000
+        list(1:4,34)=origin(1:4)+(/ -1,  1, -1,  3/)!_FCC  ;[[-1, 1,-2]]_PC ; Distance is        2.4495
+        list(1:4,35)=origin(1:4)+(/  0,  1,  0,  0/)!_FCC  ;[[ 0, 1,-1]]_PC ; Distance is 1.4142
+        list(1:4,36)=origin(1:4)+(/  0,  1,  0,  3/)!_FCC  ;[[ 1, 1, 0]]_PC ; Distance is 1.4142
+        list(1:4,37)=origin(1:4)+(/  1,  1,  1,  0/)!_FCC  ;[[ 2, 1, 1]]_PC ; Distance is        2.4495
+        list(1:4,38)=origin(1:4)+(/ -1,  1,  0,  1/)!_FCC  ;[[-1, 2,-1]]_PC ; Distance is        2.4495
+        list(1:4,39)=origin(1:4)+(/  0,  1,  0,  2/)!_FCC  ;[[ 0, 2, 0]]_PC ; Distance is     2.0000
+        list(1:4,40)=origin(1:4)+(/  0,  1,  1,  1/)!_FCC  ;[[ 1, 2, 1]]_PC ; Distance is        2.4495
+        list(1:4,41)=origin(1:4)+(/  0,  1, -1,  3/)!_FCC  ;[[ 1, 1,-2]]_PC ; Distance is        2.4495
+        list(1:4,42)=origin(1:4)+(/  1,  1,  0,  0/)!_FCC  ;[[ 2, 1,-1]]_PC ; Distance is        2.4495
+    elseif(icell .eq. 3) then
+        list(1:4, 1)=origin(1:4)+(/  1,  1,  0,  0/)!_FCC  ;[[ 1, 2,-1]]_PC ; Distance is        2.4495
+        list(1:4, 2)=origin(1:4)+(/  0, -1,  1,  0/)!_FCC  ;[[-1,-2, 1]]_PC ; Distance is        2.4495
+        list(1:4, 3)=origin(1:4)+(/ -1, -1,  1,  1/)!_FCC  ;[[-2,-1, 1]]_PC ; Distance is        2.4495
+        list(1:4, 4)=origin(1:4)+(/  0, -1,  1,  2/)!_FCC  ;[[-1,-1, 2]]_PC ; Distance is        2.4495
+        list(1:4, 5)=origin(1:4)+(/  0, -1,  0,  0/)!_FCC  ;[[-1,-2,-1]]_PC ; Distance is        2.4495
+        list(1:4, 6)=origin(1:4)+(/  0, -1,  0,  3/)!_FCC  ;[[ 0,-2, 0]]_PC ; Distance is     2.0000
+        list(1:4, 7)=origin(1:4)+(/  1, -1,  1,  0/)!_FCC  ;[[ 1,-2, 1]]_PC ; Distance is        2.4495
+        list(1:4, 8)=origin(1:4)+(/ -1, -1,  0,  1/)!_FCC  ;[[-2,-1,-1]]_PC ; Distance is        2.4495
+        list(1:4, 9)=origin(1:4)+(/  0, -1,  0,  2/)!_FCC  ;[[-1,-1, 0]]_PC ; Distance is 1.4142
+        list(1:4,10)=origin(1:4)+(/  0, -1,  1,  1/)!_FCC  ;[[ 0,-1, 1]]_PC ; Distance is 1.4142
+        list(1:4,11)=origin(1:4)+(/  1, -1,  1,  2/)!_FCC  ;[[ 1,-1, 2]]_PC ; Distance is        2.4495
+        list(1:4,12)=origin(1:4)+(/ -1,  0,  0,  3/)!_FCC  ;[[-2, 0, 0]]_PC ; Distance is     2.0000
+        list(1:4,13)=origin(1:4)+(/  0,  0,  1,  0/)!_FCC  ;[[-1, 0, 1]]_PC ; Distance is 1.4142
+        list(1:4,14)=origin(1:4)+(/  0,  0,  1,  3/)!_FCC  ;[[ 0, 0, 2]]_PC ; Distance is     2.0000
+        list(1:4,15)=origin(1:4)+(/ -1,  0,  1,  1/)!_FCC  ;[[-2, 1, 1]]_PC ; Distance is        2.4495
+        list(1:4,16)=origin(1:4)+(/  0,  0,  1,  2/)!_FCC  ;[[-1, 1, 2]]_PC ; Distance is        2.4495
+        list(1:4,17)=origin(1:4)+(/  1, -1,  0,  0/)!_FCC  ;[[ 1,-2,-1]]_PC ; Distance is        2.4495
+        list(1:4,18)=origin(1:4)+(/  0, -1, -1,  2/)!_FCC  ;[[-1,-1,-2]]_PC ; Distance is        2.4495
+        list(1:4,19)=origin(1:4)+(/  0, -1,  0,  1/)!_FCC  ;[[ 0,-1,-1]]_PC ; Distance is 1.4142
+        list(1:4,20)=origin(1:4)+(/  1, -1,  0,  2/)!_FCC  ;[[ 1,-1, 0]]_PC ; Distance is 1.4142
+        list(1:4,21)=origin(1:4)+(/  1, -1,  1,  1/)!_FCC  ;[[ 2,-1, 1]]_PC ; Distance is        2.4495
+        list(1:4,22)=origin(1:4)+(/  0,  0,  0,  0/)!_FCC  ;[[-1, 0,-1]]_PC ; Distance is 1.4142!list(1:4,1)=origin(1:4)+fcc_to_pc4d( (/ 0, 0, 0/) )!_FCC  ;[[ 0, 0, 0]]_PC ; Distance is0.0000
+        list(1:4,23)=origin(1:4)+(/  1,  0,  1,  0/)!_FCC  ;[[ 1, 0, 1]]_PC ; Distance is 1.4142
+        list(1:4,24)=origin(1:4)+(/ -1,  0,  0,  1/)!_FCC  ;[[-2, 1,-1]]_PC ; Distance is        2.4495
+        list(1:4,25)=origin(1:4)+(/  0,  0,  0,  2/)!_FCC  ;[[-1, 1, 0]]_PC ; Distance is 1.4142
+        list(1:4,26)=origin(1:4)+(/  0,  0,  1,  1/)!_FCC  ;[[ 0, 1, 1]]_PC ; Distance is 1.4142
+        list(1:4,27)=origin(1:4)+(/  1,  0,  1,  2/)!_FCC  ;[[ 1, 1, 2]]_PC ; Distance is        2.4495
+        list(1:4,28)=origin(1:4)+(/  0,  1,  1,  0/)!_FCC  ;[[-1, 2, 1]]_PC ; Distance is        2.4495
+        list(1:4,29)=origin(1:4)+(/  1, -1, -1,  2/)!_FCC  ;[[ 1,-1,-2]]_PC ; Distance is        2.4495
+        list(1:4,30)=origin(1:4)+(/  1, -1,  0,  1/)!_FCC  ;[[ 2,-1,-1]]_PC ; Distance is        2.4495
+        list(1:4,31)=origin(1:4)+(/  0,  0, -1,  3/)!_FCC  ;[[ 0, 0,-2]]_PC ; Distance is     2.0000
+        list(1:4,32)=origin(1:4)+(/  1,  0,  0,  0/)!_FCC  ;[[ 1, 0,-1]]_PC ; Distance is 1.4142
+        list(1:4,33)=origin(1:4)+(/  1,  0,  0,  3/)!_FCC  ;[[ 2, 0, 0]]_PC ; Distance is     2.0000
+        list(1:4,34)=origin(1:4)+(/  0,  0, -1,  2/)!_FCC  ;[[-1, 1,-2]]_PC ; Distance is        2.4495
+        list(1:4,35)=origin(1:4)+(/  0,  0,  0,  1/)!_FCC  ;[[ 0, 1,-1]]_PC ; Distance is 1.4142
+        list(1:4,36)=origin(1:4)+(/  1,  0,  0,  2/)!_FCC  ;[[ 1, 1, 0]]_PC ; Distance is 1.4142
+        list(1:4,37)=origin(1:4)+(/  1,  0,  1,  1/)!_FCC  ;[[ 2, 1, 1]]_PC ; Distance is        2.4495
+        list(1:4,38)=origin(1:4)+(/  0,  1,  0,  0/)!_FCC  ;[[-1, 2,-1]]_PC ; Distance is        2.4495
+        list(1:4,39)=origin(1:4)+(/  0,  1,  0,  3/)!_FCC  ;[[ 0, 2, 0]]_PC ; Distance is     2.0000
+        list(1:4,40)=origin(1:4)+(/  1,  1,  1,  0/)!_FCC  ;[[ 1, 2, 1]]_PC ; Distance is        2.4495
+        list(1:4,41)=origin(1:4)+(/  1,  0, -1,  2/)!_FCC  ;[[ 1, 1,-2]]_PC ; Distance is        2.4495
+        list(1:4,42)=origin(1:4)+(/  1,  0,  0,  1/)!_FCC  ;[[ 2, 1,-1]]_PC ; Distance is        2.4495
+    endif
 
 endsubroutine list_of_42_nearest_cells_4dpc
 
@@ -336,6 +469,7 @@ subroutine    check_escaped_atom
 
     implicit none
     integer :: ixy,iyz,izx,icell
+    integer :: ixyc,iyzc,izxc,icellc
     integer, dimension(4,42) :: list
     integer cn,anout_cl,aninn_cl,anout_gl,aninn_gl,perc
     logical :: is_cell_close
@@ -346,9 +480,12 @@ subroutine    check_escaped_atom
     !nuzxno uznatq kakije jacxejki blizki
     !dalqsxe perebiratq atomy vnutri dalqokih jacxejek
     !vycxislqatq rasstojanija do nih, i sravnivatq s katoff
-
-    call list_of_42_nearest_cells_4dpc(0,0,0,0,list)
-    perc=103
+    ixyc=0
+    iyzc=0
+    izxc=0
+    icellc=0
+    call list_of_42_nearest_cells_4dpc(ixyc,iyzc,izxc,icellc,list)
+    perc=100!3
     !print*,-42,ixy,iyz,izx,"+++"
     do ixy=-cells_xrange,cells_xrange
         !print"(A,(I4.3,1x))", "Proverka jacxejek ixy = ",ixy
@@ -369,16 +506,16 @@ subroutine    check_escaped_atom
                 !print"(A,3(I4.3,1x))", "Proverka jacxejki ",ixy,iyz,izx,icell
                 do anout_cl=1,cn_by_an_4d(0,ixy,iyz,izx,icell)
                     anout_gl=cn_by_an_4d(anout_cl,ixy,iyz,izx,icell)
-                    do aninn_cl=1,cn_by_an_4d(0,0,0,0,0)
-                        aninn_gl=cn_by_an_4d(aninn_cl,0,0,0,0)
+                    do aninn_cl=1,cn_by_an_4d(0,ixyc,iyzc,izxc,icellc)
+                        aninn_gl=cn_by_an_4d(aninn_cl,ixyc,iyzc,izxc,icellc)
                         dist=norm2( R_curr(1:3,anout_gl) - R_curr(1:3,aninn_gl) )
                         if(dist .le. cutoff_param*1d-2*perc) then
 
                             print 269,&
-                            "Atom #",aninn_gl," iz jacxejki ",0,0,0,0,"_PC4d, koordinaty ",R_curr(1:3,aninn_gl),&
-                            " i atom #",anout_gl," iz jacxejki ",ixy,iyz,izx,icell,"_PC4d, koordinaty ",R_curr(1:3,aninn_gl),&
-                            "blizxe cxem katoff ",perc," %, hotqa eto ne dolzxno bytq.",dist,cutoff_param
-                            call sleep(1)
+                            "Atom #",aninn_gl," iz jacxejki ",ixyc,iyzc,izxc,icellc,"_PC4d, koordinaty ",R_curr(1:3,aninn_gl),&
+                            " i atom #",anout_gl," iz jacxejki ",ixy,iyz,izx,icell,"_PC4d, koordinaty ",R_curr(1:3,anout_gl),&
+                            "blizxe cxem katoff ",perc," %, hotqa eto ne dolzxno bytq. dist = ",dist," cutoff_param = ",cutoff_param
+                            !call sleep(1)
                         endif
                     enddo
                 enddo
@@ -386,6 +523,6 @@ subroutine    check_escaped_atom
             enddo
         enddo
     enddo
-269 format( 2( A,I7.2,A,4(I4.1,1x),A,3(F7.3,1x) ),/,A,I3.3,A,F9.5,1x,F10.5 )
+269 format( 2( A,I7.2,A,4(I4.1,1x),A,3(F7.3,1x) ),/,A,I3.3,A,F9.5,A,F10.5 )
 
 endsubroutine check_escaped_atom

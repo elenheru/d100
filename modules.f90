@@ -37,7 +37,7 @@ module phys_parameters_mod
     !use comp_parameters_mod
     save
     real(8), parameter  ::  a0 = 2.8600d0
-    real(8), parameter  ::  aepsilon = 2.8600d-7 !to avoid match with cells centers positions
+    real(8), parameter  ::  aepsilon = 2.8600d-7 !-7 !to avoid match with cells centers positions
     real(8), parameter  ::  poisson=369d-3
     real(8), parameter  ::  burgers=-a0*50d-2*2d0!dislocation is doubled
     real(8), parameter  ::  core_sign= 1d0

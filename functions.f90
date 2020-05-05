@@ -16,16 +16,22 @@ logical function test_if_cell_is_close_4d(ixy,iyz,izx,iic)
 
     implicit none
     integer, intent(in) :: ixy,iyz,izx,iic
+    integer :: ixyc,iyzc,izxc,icellc
     integer, dimension(4,42) :: list
     integer cn
     logical :: lr
 
+    ixyc=0
+    iyzc=0
+    izxc=0
+    icellc=0
+
     lr=.true.
-    if ( (ixy .eq. 0) .and. ( iyz .eq. 0) .and. (izx .eq. 0) .and. (iic .eq. 0) ) then
+    if ( (ixy .eq. ixyc) .and. ( iyz .eq. iyzc) .and. (izx .eq. izxc) .and. (iic .eq. icellc) ) then
         test_if_cell_is_close_4d= .true.
         return
     endif
-    call list_of_42_nearest_cells_4dpc(0,0,0,0,list)
+    call list_of_42_nearest_cells_4dpc(ixyc,iyzc,izxc,icellc,list)
     lr=.false.
     !print*,-42,ixy,iyz,izx,"+++"
     do cn=1,42
@@ -46,9 +52,9 @@ function fcc_to_pc4d(fcc_cell) result(pc4d_cell)
     integer, dimension(4) :: pc4d_cell
 
     !cnraw is pc
-    cn_raw(1) = (fcc_cell(3) + fcc_cell(1) - fcc_cell(2))*2
-    cn_raw(2) = (fcc_cell(1) + fcc_cell(2) - fcc_cell(3))*2
-    cn_raw(3) = (fcc_cell(2) + fcc_cell(3) - fcc_cell(1))*2
+    cn_raw(1) = (fcc_cell(3) + fcc_cell(1))
+    cn_raw(2) = (fcc_cell(1) + fcc_cell(2))
+    cn_raw(3) = (fcc_cell(2) + fcc_cell(3))
     !pc with additions basis
     pc4d_cell(1) = ( cn_raw(1)-modulo( cn_raw(1),2 ) )/2
     pc4d_cell(2) = ( cn_raw(2)-modulo( cn_raw(2),2 ) )/2
