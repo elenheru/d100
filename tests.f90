@@ -120,8 +120,6 @@ subroutine test_cell_neibors_4d
 
 endsubroutine test_cell_neibors_4d
 
-
-
 subroutine test_cell_gap
     use array_parameters_mod
     use interaction_mod
@@ -135,7 +133,7 @@ subroutine test_cell_gap
     !proveritq zadany li koordinaty atomov
     if (atoms__in_total .le. 0) stop "gde atomy? kolicxestvo atomov slisxkom malo."
 
-    do i=9000,11000,11
+    do i=9000,11000,27
         print*, i, " eto scxqotcxik"
         cutoff_param=cutoff*1d-4*i
         call test_shift_lattice
@@ -223,5 +221,50 @@ subroutine test_shift_lattice
         R_curr(1:3,i_atoms)=R_curr(1:3,i_atoms)+rs(1:3)
     enddo
     !R_perf=R_curr
-
 endsubroutine test_shift_lattice
+
+subroutine test_factor_phi
+    implicit none
+    real(8) pw_fefe_an
+
+    print*,"pw_fefe_an(1d0-epsilon(1d0))  ",pw_fefe_an(1d0-epsilon(1d0))
+    print*,"pw_fefe_an(1d0+epsilon(1d0))  ",pw_fefe_an(1d0+epsilon(1d0))
+    print*,pw_fefe_an(1d0+epsilon(1d0))/pw_fefe_an(1d0-epsilon(1d0))
+
+endsubroutine test_factor_phi
+
+subroutine test_po_dependencies
+    implicit none
+    real(8) pw_fefe_an
+    real(8) ed_fefe_an
+    real(8) mf_fe_an
+    real(8) argmax,arg
+    integer i
+    print*, "test_po_dependencies ZAPUHXEN "
+    open (1001, file = "pw_fefe_an.txt" )
+    open (1002, file = "ed_fefe_an.txt" )
+    open (1003, file = "mf_fe___an.txt" )
+
+    argmax = 6d0
+    do i=1,nint(argmax*1d4)
+        arg=i*1d-4
+        write(1001,"(SP,ES12.5e2,1x,SP,ES12.5e2)") arg,pw_fefe_an(arg)
+    enddo
+    close(1001)
+
+    argmax = 6d0
+    do i=1,nint(argmax*1d4)
+        arg=i*1d-4
+        write(1002,"(SP,ES12.5e2,1x,SP,ES12.5e2)") arg,ed_fefe_an(arg)
+    enddo
+    close(1001)
+
+    argmax = 60d0
+    do i=1,nint(argmax*1d2)
+        arg=i*2d-2
+        write(1003,"(SP,ES12.5e2,1x,SP,ES12.5e2)") arg,mf_fe_an(arg)
+    enddo
+    close(1001)
+endsubroutine test_po_dependencies
+
+

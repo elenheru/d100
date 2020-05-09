@@ -122,7 +122,7 @@ subroutine po_wo_parameters
 !    print*,
 !    print*,
 !    print*,
-
+    close(1090)
 endsubroutine po_wo_parameters
 
 

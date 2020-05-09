@@ -81,3 +81,64 @@ module wo_counters_mod
     save
     integer :: xyz__WOcounter=0
 endmodule wo_counters_mod
+
+module energetic_parameters_mod
+    save
+    real(8), parameter :: r_bohr = 0.52917721067d0
+    real(8), parameter :: electron_charge = 1d0!although ackland gives no value in 2003 article, 1d0 sews phi smoothly
+    real(8), parameter :: z_fe = 26d0
+    real(8), parameter :: r_s_fe = 0.88534d0*sqrt(5d-1)*r_bohr/(z_fe**(1d0/3d0))
+    real(8), dimension(0:3), parameter :: &
+        b_thr_fe = (/&
+        6.4265260576348d0,&
+        1.7900488524286d0,&
+        -4.5108316729807d0,&
+        1.0866199373306d0 /)
+    real(8), dimension(14), parameter :: &
+        a_thr_fe = (/&
+        0d0,&
+        -24.028204854115d0,&
+        11.300691696477d0,&
+        5.3144495820462d0,&
+        -4.6659532856049d0,&
+        5.9637758529194d0,&
+        1.7710262006061d0,&
+        0.85913830768731d0,&
+        -2.1845362968261d0,&
+        2.6424377007466d0,&
+        -1.0358345370208d0,&
+        0.33548264951582d0,&
+        -0.046448582149334d0,&
+        -0.0070294963048689d0/)
+    real(8), dimension(14), parameter :: &
+        r_thr_fe = (/&
+        2.1d0,&
+        2.2d0,&
+        2.3d0,&
+        2.4d0,&
+        2.5d0,&
+        2.6d0,&
+        2.7d0,&
+        2.8d0,&
+        3.0d0,&
+        3.3d0,&
+        3.7d0,&
+        4.2d0,&
+        4.7d0,&
+        5.3d0/)
+    real(8), parameter :: r1_fe = 1d0,r2_fe = 2d0
+
+    real(8), dimension(3), parameter :: &
+        r_thr_fe_ed = (/&
+        2.4d0,&
+        3.2d0,&
+        4.2d0/)
+    real(8), dimension(3), parameter :: &
+        a_thr_fe_ed = (/&
+        11.686859407970d0,&
+        -0.014710740098830d0,&
+        0.47193527075943d0/)
+
+    real(8), parameter :: a_fe_mf = -0.35387096579929d-3
+
+endmodule energetic_parameters_mod
