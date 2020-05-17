@@ -418,3 +418,55 @@ subroutine get_direct_list(i_a,list)
 
     stop "obrabotatq slucxaji vyhoda za granicu massiva jacxeek pri ispolqzovanii spiska "
 endsubroutine get_direct_list
+
+subroutine initiate_energetic_parameters
+    use energetic_linappr_mod
+    implicit none
+
+    integer i
+    real(8) r, rho
+    real(8) pw_fefe_an
+    real(8) ed_fefe_an
+    real(8) mf_fe_an
+
+!    open (90, file = 'pw.txt')
+!    open (91, file = 'ed.txt')
+!    open (92, file = 'mf.txt')
+
+    do i = 1,pw_steps
+        r   = i * pw_step
+        pw_pot_val(i) = pw_fefe_an(r)
+!        pairwise_dr1(i) = pw_analytic_deriv1(r)
+!        pairwise_dr2(i) = pw_analytic_deriv2(r)
+        if(i.ge.2) then! we need average values of derivatives to avoid gap due to higher parts
+            pw_ad1_val(i-1)=(pw_pot_val(i)-pw_pot_val(i-1))*pw_recistep
+        endif
+                !write(90, *) r, pairwise_pot(i)
+    enddo
+    pw_ad1_val(pw_steps) = pw_ad1_val(pw_steps-1)
+
+    do i = 1,ed_steps
+        r   = i * ed_step
+        ed_pot_val(i) = ed_fefe_an(r)
+        if(i.ge.2) then! we need average values of derivatives to avoid gap due to higher parts
+            ed_ad1_val(i-1)=(ed_pot_val(i)-ed_pot_val(i-1))*ed_recistep
+        endif
+                !write(91, *) r, elecdens_pot(i)
+    enddo
+    ed_ad1_val(ed_steps) = ed_ad1_val(ed_steps-1)
+
+    do i = 1,mf_steps
+        rho = i * mf_step
+        mf_pot_val(i) = mf_fe_an(rho)
+        if(i.ge.2) then! we need average values of derivatives to avoid gap due to higher parts
+            mf_ad1_val(i-1)=(mf_pot_val(i)-mf_pot_val(i-1))*mf_recistep
+        endif
+                !write(92, *) r, embefunc_pot(i)
+    enddo
+    mf_ad1_val(mf_steps) = mf_ad1_val(mf_steps-1)
+
+
+    !close(90);close(91);close(92)
+    write(*,*) "Priblizxonnyje znacxenija potencialov polucxeny iz analiticxeskih. OK"
+
+endsubroutine initiate_energetic_parameters

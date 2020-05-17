@@ -238,33 +238,76 @@ subroutine test_po_dependencies
     real(8) pw_fefe_an
     real(8) ed_fefe_an
     real(8) mf_fe_an
-    real(8) argmax,arg
-    integer i
-    print*, "test_po_dependencies ZAPUHXEN "
-    open (1001, file = "pw_fefe_an.txt" )
-    open (1002, file = "ed_fefe_an.txt" )
-    open (1003, file = "mf_fe___an.txt" )
+    real(8) pw_fefe_la
+    real(8) ed_fefe_la
+    real(8) mf_fe_la
 
+    real(8) pw_fefe_dif
+    real(8) ed_fefe_dif
+    real(8) mf_fe_dif
+
+    real(8) pw_fefe_difsum
+    real(8) ed_fefe_difsum
+    real(8) mf_fe_difsum
+    real(8) argmax,arg
+
+    integer i,intpwmax,intedmax,intmfmax
+
+    pw_fefe_difsum = 0d0
+    ed_fefe_difsum = 0d0
+    mf_fe_difsum = 0d0
+
+    print*, "test_po_dependencies ZAPUHXEN "
+    call initiate_energetic_parameters
+    open (1001, file = "pw_fefe_an_la.txt" )
+    open (1002, file = "ed_fefe_an_la.txt" )
+    open (1003, file = "mf_fe___an_la.txt" )
+
+    !print*,isnan(pw_fefe_difsum),isnan(1d0),(pw_fefe_difsum)
     argmax = 6d0
-    do i=1,nint(argmax*1d4)
+    intpwmax = nint(argmax*1d4)
+    do i=100,intpwmax+100
         arg=i*1d-4
-        write(1001,"(SP,ES12.5e2,1x,SP,ES12.5e2)") arg,pw_fefe_an(arg)
+        pw_fefe_dif = ( pw_fefe_an(arg)-pw_fefe_la(arg) )
+        !pw_fefe_dif = ( pw_fefe_an(arg)-pw_fefe_la(arg) ) / ( pw_fefe_an(arg)+pw_fefe_la(arg) ) * 2d0
+        !if(isnan(pw_fefe_dif-pw_fefe_dif)) pw_fefe_dif = 0d0
+        pw_fefe_difsum = pw_fefe_difsum + pw_fefe_dif
+        write(1001,601) arg,pw_fefe_an(arg),pw_fefe_la(arg),pw_fefe_dif
     enddo
     close(1001)
 
     argmax = 6d0
-    do i=1,nint(argmax*1d4)
+    intedmax = nint(argmax*1d4)
+    do i=1,intedmax
         arg=i*1d-4
-        write(1002,"(SP,ES12.5e2,1x,SP,ES12.5e2)") arg,ed_fefe_an(arg)
+        ed_fefe_dif = (ed_fefe_an(arg)-ed_fefe_la(arg))
+        !ED_FEFE_DIF = (ED_FEFE_AN(ARG)-ED_FEFE_LA(ARG))/(ED_FEFE_AN(ARG)+ED_FEFE_LA(ARG))*2D0
+        !IF(ISNAN(ED_FEFE_DIF-ED_FEFE_DIF)) ED_FEFE_DIF = 0D0
+        ed_fefe_difsum = ed_fefe_difsum + ed_fefe_dif
+        write(1002,601) arg,ed_fefe_an(arg),ed_fefe_la(arg),ed_fefe_dif
     enddo
     close(1001)
 
     argmax = 60d0
-    do i=1,nint(argmax*1d2)
+    intmfmax = nint(argmax*1d2)
+    do i=1,intmfmax
         arg=i*2d-2
-        write(1003,"(SP,ES12.5e2,1x,SP,ES12.5e2)") arg,mf_fe_an(arg)
+        mf_fe_dif = (mf_fe_an(arg)-mf_fe_la(arg))
+        !MF_FE_DIF = (MF_FE_AN(ARG)-MF_FE_LA(ARG))/(MF_FE_AN(ARG)+MF_FE_LA(ARG))*2D0
+        !IF(ISNAN(MF_FE_DIF-MF_FE_DIF)) MF_FE_DIF = 0D0
+        mf_fe_difsum = mf_fe_difsum + mf_fe_dif
+        write(1003,601) arg,mf_fe_an(arg),mf_fe_la(arg),mf_fe_dif
     enddo
     close(1001)
+    print 602,"Sumof ",intpwmax," parts and total average error for pairwise ion ion   ",pw_fefe_difsum,pw_fefe_difsum/intpwmax
+    print 602,"Sumof ",intedmax," parts and total average error for electronic density ",ed_fefe_difsum,ed_fefe_difsum/intedmax
+    print 602,"Sumof ",intmfmax," parts and total average error for embedding functon  ",mf_fe_difsum,mf_fe_difsum/intmfmax
+
+    !PRINT*,ISNAN(PW_FEFE_DIFSUM),ISNAN(1D0),(PW_FEFE_DIFSUM)
+    !IF(ISNAN(PW_FEFE_DIFSUM)) STOP "NAN NANA"
+
+601 format(SP,4(ES12.5e2,1x))
+602 format(SP,A,I6.2,A,2(ES12.5e2,1x))
 endsubroutine test_po_dependencies
 
 
