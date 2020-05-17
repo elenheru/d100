@@ -41,11 +41,28 @@ subroutine      spawn_bcc_rectangular_100
 endsubroutine   spawn_bcc_rectangular_100
 
 subroutine fill_an_by_cn_4d
+    use interaction_mod
+    implicit none
+    integer i_atoms
+
+    print"(A,F9.5,A,3I4.2)"," Zapolnqajem 4d massiv an_by_cn. Radius obrezanija = ",cutoff_param," angstrem"
+
+    do i_atoms=1,atoms__in_total
+        call fill_an_by_cn_4d_peratomic(i_atoms)
+        if ( an_by_cn_4d(1,i_atoms)**2 .gt. cells_xrange**2 ) stop " atom vysxel za dopustimoje kolicxestvo jacxeek po osi X"
+        if ( an_by_cn_4d(2,i_atoms)**2 .gt. cells_yrange**2 ) stop " atom vysxel za dopustimoje kolicxestvo jacxeek po osi Y"
+        if ( an_by_cn_4d(3,i_atoms)**2 .gt. cells_zrange**2 ) stop " atom vysxel za dopustimoje kolicxestvo jacxeek po osi Z"
+    enddo
+
+endsubroutine fill_an_by_cn_4d
+
+subroutine fill_an_by_cn_4d_peratomic(i_atoms)
     use positions_mod
     use interaction_mod
     use phys_parameters_mod
     implicit none
-    integer i_atoms,cn_raw(3)
+    integer, intent(in) :: i_atoms
+    integer cn_raw(3)
     real(8) scale_factor,r_at(3),r_rel(3),r_rel_abs(3),cellpos(3)
     real(8) hc,hc_reci
 
@@ -59,133 +76,115 @@ subroutine fill_an_by_cn_4d
 !    zn=(/ .true.  , .true.  , .false. , .false. , .false. , .true.  /)
 !    !      x+y>0  ; -x+y>0  ;  y+z>0  ; -y+z>0  ;  z+x>0  ; -z+x>0
 
-    print"(A,F9.5,A,3I4.2)"," Zapolnqajem 4d massiv an_by_cn. Radius obrezanija = ",cutoff_param," angstrem"
-
-    ! mozxno perepakovatq massiv anbycn tak cxtoby on byl 4mernym.
-    ! togda ne ponadobitsqa izbytok razmera massiva iz-za afinnosti FCC bazisa
-
 !    hc=sqrt(16d0/27d0)*(cutoff_param) !jesli granq ravna cutoff
     hc=sqrt(4d0/3d0)*(cutoff_param) !jesli diametr vpisannoj sfery raven cutoff, 2h
     hc_reci=1d0/hc
 
-    do i_atoms=1,atoms__in_total
+    r_at(1:3)=R_curr(1:3,i_atoms)
 
-        r_at(1:3)=R_curr(1:3,i_atoms)
+    cn_raw(1:3)=nint( hc_reci*2d0*(r_at(1:3)) ) !delim na menqsxije kubiki
 
-        cn_raw(1:3)=nint( hc_reci*2d0*(r_at(1:3)) ) !delim na menqsxije kubiki
+    cellpos(1:3)=(hc/2d0)*cn_raw(1:3)
+    if ( mod( sum(cn_raw) ,2 ) .eq. 0 ) then
+        !eto kubik vnutri jacxejki, nuzxno razlozxitq koordinaty po bazisu
 
-        cellpos(1:3)=(hc/2d0)*cn_raw(1:3)
-        if ( mod( sum(cn_raw) ,2 ) .eq. 0 ) then
-            !eto kubik vnutri jacxejki, nuzxno razlozxitq koordinaty po bazisu
-
-            !fcc basis
+        !fcc basis
 !            an_by_cn(1,i_atoms) =-(-cn_raw(2)-cn_raw(3)+cn_raw(1) )/2
 !            an_by_cn(2,i_atoms) =-(-cn_raw(3)-cn_raw(1)+cn_raw(2) )/2
 !            an_by_cn(3,i_atoms) =-(-cn_raw(1)-cn_raw(2)+cn_raw(3) )/2
-            !fcc basis
+        !fcc basis
 
-            !pc with additions basis
-            an_by_cn_4d(1,i_atoms) = ( cn_raw(1)-modulo( cn_raw(1),2 ) )/2
-            an_by_cn_4d(2,i_atoms) = ( cn_raw(2)-modulo( cn_raw(2),2 ) )/2
-            an_by_cn_4d(3,i_atoms) = ( cn_raw(3)-modulo( cn_raw(3),2 ) )/2
-            if (     modulo(cn_raw(1),2) .eq. 1 .and. modulo(cn_raw(2),2) .eq. 1 ) then
-                an_by_cn_4d(4,i_atoms) = 1
-            elseif ( modulo(cn_raw(2),2) .eq. 1 .and. modulo(cn_raw(3),2) .eq. 1 ) then
-                an_by_cn_4d(4,i_atoms) = 2
-            elseif ( modulo(cn_raw(3),2) .eq. 1 .and. modulo(cn_raw(1),2) .eq. 1 ) then
-                an_by_cn_4d(4,i_atoms) = 3
-            else
-                an_by_cn_4d(4,i_atoms) = 0
-            endif
-            !pc with additions basis
-            cycle
+        !pc with additions basis
+        an_by_cn_4d(1,i_atoms) = ( cn_raw(1)-modulo( cn_raw(1),2 ) )/2
+        an_by_cn_4d(2,i_atoms) = ( cn_raw(2)-modulo( cn_raw(2),2 ) )/2
+        an_by_cn_4d(3,i_atoms) = ( cn_raw(3)-modulo( cn_raw(3),2 ) )/2
+        if (     modulo(cn_raw(1),2) .eq. 1 .and. modulo(cn_raw(2),2) .eq. 1 ) then
+            an_by_cn_4d(4,i_atoms) = 1
+        elseif ( modulo(cn_raw(2),2) .eq. 1 .and. modulo(cn_raw(3),2) .eq. 1 ) then
+            an_by_cn_4d(4,i_atoms) = 2
+        elseif ( modulo(cn_raw(3),2) .eq. 1 .and. modulo(cn_raw(1),2) .eq. 1 ) then
+            an_by_cn_4d(4,i_atoms) = 3
         else
-            !eto kubik dlqa razdelenija. nuzxno scxitatq logiku
-            r_rel  =  r_at - cellpos
+            an_by_cn_4d(4,i_atoms) = 0
+        endif
+        !pc with additions basis
+        !cycle
+    else
+        !eto kubik dlqa razdelenija. nuzxno scxitatq logiku
+        r_rel  =  r_at - cellpos
 
-            our(1) =  r_rel(1) .gt. -r_rel(2)
-            our(2) =  r_rel(2) .gt.  r_rel(1)
-            our(3) =  r_rel(2) .gt. -r_rel(3)
-            our(4) =  r_rel(3) .gt.  r_rel(2)
-            our(5) =  r_rel(3) .gt. -r_rel(1)
-            our(6) =  r_rel(1) .gt.  r_rel(3)
+        our(1) =  r_rel(1) .gt. -r_rel(2)
+        our(2) =  r_rel(2) .gt.  r_rel(1)
+        our(3) =  r_rel(2) .gt. -r_rel(3)
+        our(4) =  r_rel(3) .gt.  r_rel(2)
+        our(5) =  r_rel(3) .gt. -r_rel(1)
+        our(6) =  r_rel(1) .gt.  r_rel(3)
 
-            if (&
-                    ( our(1) .eqv. xp(1) ).and. &
-                    ( our(2) .eqv. xp(2) ).and. &
-                    ( our(5) .eqv. xp(5) ).and. &
-                    ( our(6) .eqv. xp(6) ) &
-                ) then
-                cn_raw(1)=cn_raw(1)+1
-            elseif (&
-                    ( our(1) .eqv. xn(1) ).and. &
-                    ( our(2) .eqv. xn(2) ).and. &
-                    ( our(5) .eqv. xn(5) ).and. &
-                    ( our(6) .eqv. xn(6) ) &
-                ) then
-                cn_raw(1)=cn_raw(1)-1
-            elseif (&
-                    ( our(1) .eqv. yp(1) ).and. &
-                    ( our(2) .eqv. yp(2) ).and. &
-                    ( our(3) .eqv. yp(3) ).and. &
-                    ( our(4) .eqv. yp(4) ) &
-                ) then
-                cn_raw(2)=cn_raw(2)+1
-            elseif (&
-                    ( our(1) .eqv. yn(1) ).and. &
-                    ( our(2) .eqv. yn(2) ).and. &
-                    ( our(3) .eqv. yn(3) ).and. &
-                    ( our(4) .eqv. yn(4) ) &
-                ) then
-                cn_raw(2)=cn_raw(2)-1
-            elseif (&
-                    ( our(3) .eqv. zp(3) ).and. &
-                    ( our(4) .eqv. zp(4) ).and. &
-                    ( our(5) .eqv. zp(5) ).and. &
-                    ( our(6) .eqv. zp(6) ) &
-                ) then
-                cn_raw(3)=cn_raw(3)+1
-            elseif (&
-                    ( our(3) .eqv. zn(3) ).and. &
-                    ( our(4) .eqv. zn(4) ).and. &
-                    ( our(5) .eqv. zn(5) ).and. &
-                    ( our(6) .eqv. zn(6) ) &
-                ) then
-                cn_raw(3)=cn_raw(3)-1
-            else
-                print*,"Tablica istinnosti ne sovpala ni s kem. Atom ",i_atoms,r_at(1:3)
-                print "(1x,6L2)", our
-                STOP "tablica ne dolzxna proverqatsqa dlqa nerelevantnoj pary koordinat"
-            endif
-            !fcc basis
-!            an_by_cn(1,i_atoms) =(-cn_raw(2)-cn_raw(3)+cn_raw(1) )/2
-!            an_by_cn(2,i_atoms) =(-cn_raw(3)-cn_raw(1)+cn_raw(2) )/2
-!            an_by_cn(3,i_atoms) =(-cn_raw(1)-cn_raw(2)+cn_raw(3) )/2
-            !fcc basis
-
-            !pc with additions basis
-            an_by_cn_4d(1,i_atoms) = ( cn_raw(1)-modulo( cn_raw(1),2 ) )/2
-            an_by_cn_4d(2,i_atoms) = ( cn_raw(2)-modulo( cn_raw(2),2 ) )/2
-            an_by_cn_4d(3,i_atoms) = ( cn_raw(3)-modulo( cn_raw(3),2 ) )/2
-            if (     modulo(cn_raw(1),2) .eq. 1 .and. modulo(cn_raw(2),2) .eq. 1 ) then
-                an_by_cn_4d(4,i_atoms) = 1
-            elseif ( modulo(cn_raw(2),2) .eq. 1 .and. modulo(cn_raw(3),2) .eq. 1 ) then
-                an_by_cn_4d(4,i_atoms) = 2
-            elseif ( modulo(cn_raw(3),2) .eq. 1 .and. modulo(cn_raw(1),2) .eq. 1 ) then
-                an_by_cn_4d(4,i_atoms) = 3
-            else
-                an_by_cn_4d(4,i_atoms) = 0
-            endif
-            !pc with additions basis
+        if (&
+                ( our(1) .eqv. xp(1) ).and. &
+                ( our(2) .eqv. xp(2) ).and. &
+                ( our(5) .eqv. xp(5) ).and. &
+                ( our(6) .eqv. xp(6) ) &
+            ) then
+            cn_raw(1)=cn_raw(1)+1
+        elseif (&
+                ( our(1) .eqv. xn(1) ).and. &
+                ( our(2) .eqv. xn(2) ).and. &
+                ( our(5) .eqv. xn(5) ).and. &
+                ( our(6) .eqv. xn(6) ) &
+            ) then
+            cn_raw(1)=cn_raw(1)-1
+        elseif (&
+                ( our(1) .eqv. yp(1) ).and. &
+                ( our(2) .eqv. yp(2) ).and. &
+                ( our(3) .eqv. yp(3) ).and. &
+                ( our(4) .eqv. yp(4) ) &
+            ) then
+            cn_raw(2)=cn_raw(2)+1
+        elseif (&
+                ( our(1) .eqv. yn(1) ).and. &
+                ( our(2) .eqv. yn(2) ).and. &
+                ( our(3) .eqv. yn(3) ).and. &
+                ( our(4) .eqv. yn(4) ) &
+            ) then
+            cn_raw(2)=cn_raw(2)-1
+        elseif (&
+                ( our(3) .eqv. zp(3) ).and. &
+                ( our(4) .eqv. zp(4) ).and. &
+                ( our(5) .eqv. zp(5) ).and. &
+                ( our(6) .eqv. zp(6) ) &
+            ) then
+            cn_raw(3)=cn_raw(3)+1
+        elseif (&
+                ( our(3) .eqv. zn(3) ).and. &
+                ( our(4) .eqv. zn(4) ).and. &
+                ( our(5) .eqv. zn(5) ).and. &
+                ( our(6) .eqv. zn(6) ) &
+            ) then
+            cn_raw(3)=cn_raw(3)-1
+        else
+            print*,"Tablica istinnosti ne sovpala ni s kem. Atom ",i_atoms,r_at(1:3)
+            print "(1x,6L2)", our
+            STOP "tablica ne dolzxna proverqatsqa dlqa nerelevantnoj pary koordinat"
         endif
 
-    enddo
-    if ( an_by_cn_4d(1,i_atoms)**2 .gt. cells_xrange**2 ) stop " atom vysxel za dopustimoje kolicxestvo jacxeek po osi X"
-    if ( an_by_cn_4d(2,i_atoms)**2 .gt. cells_yrange**2 ) stop " atom vysxel za dopustimoje kolicxestvo jacxeek po osi Y"
-    if ( an_by_cn_4d(3,i_atoms)**2 .gt. cells_zrange**2 ) stop " atom vysxel za dopustimoje kolicxestvo jacxeek po osi Z"
-!263 format (/,A,I8.4,A,3(F9.4,1x),A,3(F8.3,1x),/,A,3(I5.4,1x),A,/,A,3(F8.3,1x),A,3(F8.3,1x),A,F8.4)
+        !pc with additions basis
+        an_by_cn_4d(1,i_atoms) = ( cn_raw(1)-modulo( cn_raw(1),2 ) )/2
+        an_by_cn_4d(2,i_atoms) = ( cn_raw(2)-modulo( cn_raw(2),2 ) )/2
+        an_by_cn_4d(3,i_atoms) = ( cn_raw(3)-modulo( cn_raw(3),2 ) )/2
+        if (     modulo(cn_raw(1),2) .eq. 1 .and. modulo(cn_raw(2),2) .eq. 1 ) then
+            an_by_cn_4d(4,i_atoms) = 1
+        elseif ( modulo(cn_raw(2),2) .eq. 1 .and. modulo(cn_raw(3),2) .eq. 1 ) then
+            an_by_cn_4d(4,i_atoms) = 2
+        elseif ( modulo(cn_raw(3),2) .eq. 1 .and. modulo(cn_raw(1),2) .eq. 1 ) then
+            an_by_cn_4d(4,i_atoms) = 3
+        else
+            an_by_cn_4d(4,i_atoms) = 0
+        endif
+        !pc with additions basis
+    endif
 
-endsubroutine fill_an_by_cn_4d
+endsubroutine fill_an_by_cn_4d_peratomic
 
 subroutine fill_cn_by_an_4d
     use positions_mod
