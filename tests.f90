@@ -224,8 +224,9 @@ subroutine test_shift_lattice
 endsubroutine test_shift_lattice
 
 subroutine test_factor_phi
+    use ackland2003potential_fe_mod
     implicit none
-    real(8) pw_fefe_an
+    !real(8) pw_fefe_an
 
     print*,"pw_fefe_an(1d0-epsilon(1d0))  ",pw_fefe_an(1d0-epsilon(1d0))
     print*,"pw_fefe_an(1d0+epsilon(1d0))  ",pw_fefe_an(1d0+epsilon(1d0))
@@ -234,10 +235,11 @@ subroutine test_factor_phi
 endsubroutine test_factor_phi
 
 subroutine test_po_dependencies
+    use ackland2003potential_fe_mod
     implicit none
-    real(8) pw_fefe_an
-    real(8) ed_fefe_an
-    real(8) mf_fe_an
+!    real(8) pw_fefe_an
+!    real(8) ed_fefe_an
+!    real(8) mf_fe_an
     real(8) pw_fefe_la
     real(8) ed_fefe_la
     real(8) mf_fe_la

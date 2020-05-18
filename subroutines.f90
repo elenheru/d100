@@ -420,13 +420,14 @@ endsubroutine get_direct_list
 
 subroutine initiate_energetic_parameters
     use energetic_linappr_mod
+    use ackland2003potential_fe_mod
     implicit none
 
     integer i
     real(8) r, rho
-    real(8) pw_fefe_an
-    real(8) ed_fefe_an
-    real(8) mf_fe_an
+!    real(8) pw_fefe_an
+!    real(8) ed_fefe_an
+!    real(8) mf_fe_an
 
 !    open (90, file = 'pw.txt')
 !    open (91, file = 'ed.txt')
