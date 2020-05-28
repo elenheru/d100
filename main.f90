@@ -41,7 +41,7 @@ PROGRAM main
     !call test_big_array
     CALL TEST_FIND_NEIBORS_COMPARISON
     !call test_system_clock
-
+    call wo_xyz_rhcells_4d
 ENDPROGRAM
 
 !

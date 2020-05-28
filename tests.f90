@@ -315,10 +315,11 @@ endsubroutine test_po_dependencies
 subroutine test_find_neibors_comparison
     use lists_assortiment_mod
     USE INTERACTION_MOD
+    use array_parameters_mod
     implicit none
 
-    integer i
-        integer ixy,iyz,izx,icl,ia_cand
+    integer i,omp_get_thread_num
+    INTEGER(8) :: ct1,ct2,ct3,ct4
 
     print*, "test_find_neibors_comparison ZAPUHXEN "
     print*, "sravnim skorostq polucxenija sosedej dlqa topornogo algoritma i dlqa jacxeecxnogo "
@@ -326,56 +327,53 @@ subroutine test_find_neibors_comparison
     call fill_an_by_cn_4d
     call fill_cn_by_an_4d
 
-    do i = 1,30000,5000
+    CALL SYSTEM_CLOCK(ct1)
+
+    do i = 1,atoms__in_total
         call get_direct_list(i)
-        !STOP "testirujem get direct list "
-        call get_direct_list_test_exhaustive(i)
-        call sleep(1)
     enddo
 
-!        ia_cand = 25001
-!        ixy = an_by_cn_4d(1,ia_cand)
-!        iyz = an_by_cn_4d(2,ia_cand)
-!        izx = an_by_cn_4d(3,ia_cand)
-!        icl = an_by_cn_4d(4,ia_cand)
-!        print*,ia_cand," € 25k µ ",ixy,iyz,izx,icl
+    CALL SYSTEM_CLOCK(ct2)
+
+    do i = 1,atoms__in_total
+        call get_direct_list_test_exhaustive(i)
+        print*,i
+    enddo
+
+    CALL SYSTEM_CLOCK(ct3)
 !
-!        ia_cand = 24932
-!        ixy = an_by_cn_4d(1,ia_cand)
-!        iyz = an_by_cn_4d(2,ia_cand)
-!        izx = an_by_cn_4d(3,ia_cand)
-!        icl = an_by_cn_4d(4,ia_cand)
-!        print*,ia_cand," € ",ixy,iyz,izx,icl
-!
-!        ia_cand = 27313
-!        ixy = an_by_cn_4d(1,ia_cand)
-!        iyz = an_by_cn_4d(2,ia_cand)
-!        izx = an_by_cn_4d(3,ia_cand)
-!        icl = an_by_cn_4d(4,ia_cand)
-!        print*,ia_cand," € ",ixy,iyz,izx,icl
-!
-!        ia_cand = 27381
-!        ixy = an_by_cn_4d(1,ia_cand)
-!        iyz = an_by_cn_4d(2,ia_cand)
-!        izx = an_by_cn_4d(3,ia_cand)
-!        icl = an_by_cn_4d(4,ia_cand)
-!        print*,ia_cand," € ",ixy,iyz,izx,icl
-!
-!        ia_cand = 27382
-!        ixy = an_by_cn_4d(1,ia_cand)
-!        iyz = an_by_cn_4d(2,ia_cand)
-!        izx = an_by_cn_4d(3,ia_cand)
-!        icl = an_by_cn_4d(4,ia_cand)
-!        print*,ia_cand," € ",ixy,iyz,izx,icl
-!
-!        ia_cand = 27383
-!        ixy = an_by_cn_4d(1,ia_cand)
-!        iyz = an_by_cn_4d(2,ia_cand)
-!        izx = an_by_cn_4d(3,ia_cand)
-!        icl = an_by_cn_4d(4,ia_cand)
-!        print*,ia_cand," € ",ixy,iyz,izx,icl
-!        do
+!    !$OMP PARALLEL
+!    print*, omp_get_thread_num()
+!    if(omp_get_thread_num() .eq. 0) then
+!        do i = 1 , atoms__in_total/4
+!        call get_direct_list_test_exhaustive(i)
 !        enddo
+!    endif
+!    if(omp_get_thread_num() .eq. 1) then
+!        do i = 1 +   atoms__in_total/4 , 2*atoms__in_total/4
+!        call get_direct_list_test_exhaustive(i)
+!        enddo
+!    endif
+!    if(omp_get_thread_num() .eq. 2) then
+!        do i = 1 + 2*atoms__in_total/4 , 3*atoms__in_total/4
+!        call get_direct_list_test_exhaustive(i)
+!        enddo
+!    endif
+!    if(omp_get_thread_num() .eq. 3) then
+!        do i = 1 + 3*atoms__in_total/4 ,   atoms__in_total
+!        call get_direct_list_test_exhaustive(i)
+!        enddo
+!    endif
+!    !$OMP END PARALLEL
+
+    CALL SYSTEM_CLOCK(ct4)
+
+
+    write(*,*) "ticks get_direct_list            ",(ct2-ct1)*1d-6," ms"
+    write(*,*) "ticks get_direct_list exhaustive ",(ct3-ct2)*1d-6," ms"
+    write(*,*) "ticks get_direct_list exhaustive ",(ct4-ct3)*1d-6," ms (parallel)"
+    write(*,*) "ticks sum ",(ct3-ct1)*1d-6," ms"
+
 endsubroutine test_find_neibors_comparison
 
 subroutine test_big_array

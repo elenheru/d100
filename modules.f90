@@ -1,8 +1,8 @@
 module array_parameters_mod
     save
-    integer, parameter  ::  x_layers= 17,y_layers= 17,z_layers= 17
-    integer, parameter  ::  atoms_max_array = &
-        (2*x_layers+1)*(2*y_layers+1)*(2*z_layers+1)*3
+    integer, parameter  ::  x_layers= 67,y_layers= 67,z_layers= 6
+    integer, parameter  ::  atoms_max_array = nint(&
+        (2*x_layers+1)*(2*y_layers+1)*(2*z_layers+1)*21d-1)
     integer             ::  atoms__in_total
     integer, parameter  ::  cells_xrange=5*x_layers/3
     integer, parameter  ::  cells_yrange=5*y_layers/3
