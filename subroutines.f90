@@ -409,13 +409,128 @@ subroutine list_of_42_nearest_cells_4dpc(ixy,iyz,izx,icell,list)
 
 endsubroutine list_of_42_nearest_cells_4dpc
 
-subroutine get_direct_list(i_a,list)
+subroutine get_direct_list(i_a)
+    use positions_mod
     use interaction_mod
+    use phys_parameters_mod
+    use lists_assortiment_mod
     implicit none
-    integer, intent(in) :: i_a !atom, sosedi kotorogo trebyjetsqa najti
-    integer,dimension(0:incell_atoms_max*12), intent(inout) :: list !atom, sosedi kotorogo trebyjetsqa najti
 
-    stop "obrabotatq slucxaji vyhoda za granicu massiva jacxeek pri ispolqzovanii spiska "
+    integer, intent(in) :: i_a !atom, sosedi kotorogo trebyjetsqa najti
+    !integer, dimension(4,42) :: list_cells
+    integer ixy,iyz,izx,icl
+    integer jxy,jyz,jzx,jcl
+    integer i_aan,i_acn
+    integer q_aan,n_aan, j
+    real(8) :: shorting = 1d0!3d0/3d0
+
+    !stop "obrabotatq slucxaji vyhoda za granicu massiva jacxeek pri ispolqzovanii spiska "
+    !neobhodimo vyzyvatq dlqa aktualqnogo
+
+    ixy = an_by_cn_4d(1,i_a)
+    iyz = an_by_cn_4d(2,i_a)
+    izx = an_by_cn_4d(3,i_a)
+    icl = an_by_cn_4d(4,i_a)
+
+    list_atoms_qnt = 0
+    list_atoms = 0
+    call list_of_42_nearest_cells_4dpc(ixy,iyz,izx,icl,list_cells)
+
+    q_aan = cn_by_an_4d(0,ixy,iyz,izx,icl)
+
+    do i_aan = 1,q_aan
+        n_aan = cn_by_an_4d(i_aan,ixy,iyz,izx,icl)
+        if (n_aan .eq. i_a) cycle
+        !inside the cube
+        if ( abs( R_curr(1,n_aan) - R_curr(1,i_a) ) .gt. cutoff*shorting ) cycle
+        if ( abs( R_curr(2,n_aan) - R_curr(2,i_a) ) .gt. cutoff*shorting ) cycle
+        if ( abs( R_curr(3,n_aan) - R_curr(3,i_a) ) .gt. cutoff*shorting ) cycle
+        !!inside the octahedron
+        if ( abs(   +( R_curr(1,n_aan) - R_curr(1,i_a) ) &
+                    +( R_curr(2,n_aan) - R_curr(2,i_a) ) &
+                    +( R_curr(3,n_aan) - R_curr(3,i_a) ) &
+                ) .gt. cutoff*sqrt(3d0) ) cycle
+        if ( abs(   -( R_curr(1,n_aan) - R_curr(1,i_a) ) &
+                    +( R_curr(2,n_aan) - R_curr(2,i_a) ) &
+                    +( R_curr(3,n_aan) - R_curr(3,i_a) ) &
+                ) .gt. cutoff*sqrt(3d0) ) cycle
+        if ( abs(   +( R_curr(1,n_aan) - R_curr(1,i_a) ) &
+                    -( R_curr(2,n_aan) - R_curr(2,i_a) ) &
+                    +( R_curr(3,n_aan) - R_curr(3,i_a) ) &
+                ) .gt. cutoff*sqrt(3d0) ) cycle
+        if ( abs(   -( R_curr(1,n_aan) - R_curr(1,i_a) ) &
+                    -( R_curr(2,n_aan) - R_curr(2,i_a) ) &
+                    +( R_curr(3,n_aan) - R_curr(3,i_a) ) &
+                ) .gt. cutoff*sqrt(3d0) ) cycle
+        !!mozxet bytq lucxsxe ne kub s oktaedrom( t.o. usecxonnyj oktaedr) a rombododekaedr
+        IF ( NORM2( R_CURR(1:3,N_AAN) - R_CURR(1:3,I_A) ) .GT. CUTOFF*shorting ) CYCLE
+        list_atoms_qnt = list_atoms_qnt + 1
+        list_atoms(list_atoms_qnt) = n_aan
+    enddo
+
+
+    do i_acn=1,42
+
+        jxy = list_cells(1,i_acn)
+        if ( jxy**2 .gt. cells_xrange**2 ) cycle
+        jyz = list_cells(2,i_acn)
+        if ( jyz**2 .gt. cells_yrange**2 ) cycle
+        jzx = list_cells(3,i_acn)
+        if ( jzx**2 .gt. cells_zrange**2 ) cycle
+        jcl = list_cells(4,i_acn)
+
+        q_aan = cn_by_an_4d(0,jxy,jyz,jzx,jcl)
+
+        !PRINT*, " V JACXEJKE ", JXY,JYZ,JZX,JCL, " lezxit ", Q_AAN, " ATOMOV "
+        !CALL SLEEP(1)
+
+        do i_aan = 1,q_aan
+
+            n_aan = cn_by_an_4d(i_aan,jxy,jyz,jzx,jcl)
+
+            !inside the cube
+            if ( abs( R_curr(1,n_aan) - R_curr(1,i_a) ) .gt. cutoff*shorting ) cycle
+            if ( abs( R_curr(2,n_aan) - R_curr(2,i_a) ) .gt. cutoff*shorting ) cycle
+            if ( abs( R_curr(3,n_aan) - R_curr(3,i_a) ) .gt. cutoff*shorting ) cycle
+            !inside the octahedron
+            if ( abs(   +( R_curr(1,n_aan) - R_curr(1,i_a) ) &
+                        +( R_curr(2,n_aan) - R_curr(2,i_a) ) &
+                        +( R_curr(3,n_aan) - R_curr(3,i_a) ) &
+                    ) .gt. cutoff*sqrt(3d0) ) cycle
+            if ( abs(   -( R_curr(1,n_aan) - R_curr(1,i_a) ) &
+                        +( R_curr(2,n_aan) - R_curr(2,i_a) ) &
+                        +( R_curr(3,n_aan) - R_curr(3,i_a) ) &
+                    ) .gt. cutoff*sqrt(3d0) ) cycle
+            if ( abs(   +( R_curr(1,n_aan) - R_curr(1,i_a) ) &
+                        -( R_curr(2,n_aan) - R_curr(2,i_a) ) &
+                        +( R_curr(3,n_aan) - R_curr(3,i_a) ) &
+                    ) .gt. cutoff*sqrt(3d0) ) cycle
+            if ( abs(   -( R_curr(1,n_aan) - R_curr(1,i_a) ) &
+                        -( R_curr(2,n_aan) - R_curr(2,i_a) ) &
+                        +( R_curr(3,n_aan) - R_curr(3,i_a) ) &
+                    ) .gt. cutoff*sqrt(3d0) ) cycle
+            !mozxet bytq lucxsxe ne kub s oktaedrom( t.o. usecxonnyj oktaedr) a rombododekaedr
+
+            IF ( NORM2( R_CURR(1:3,N_AAN) - R_CURR(1:3,I_A) ) .GT. CUTOFF*shorting ) CYCLE
+
+            list_atoms_qnt = list_atoms_qnt + 1
+            list_atoms(list_atoms_qnt) = n_aan
+
+        enddo
+    enddo
+    !CALL SLEEP(3)
+    print*, "atom #",i_a," imeet ",list_atoms_qnt," sosedej "
+!
+    if(i_a .eq. 25001) then
+        OPEN (204, FILE = "25000_rhdc.txt")
+        DO J=1,LIST_ATOMS_QNT
+            N_AAN=LIST_ATOMS(J)
+            PRINT*,"ATOM ",I_A," SOSED DLQA ATOMA#",N_AAN, ". RASSTOJANIJE ",NORM2( R_CURR(1:3,N_AAN) - R_CURR(1:3,I_A) )
+            WRITE(204,*),"ATOM ",I_A," SOSED DLQA ATOMA#",N_AAN, &
+                ". RASSTOJANIJE ",NORM2( R_CURR(1:3,N_AAN) - R_CURR(1:3,I_A) )
+        ENDDO
+        CLOSE(204)
+    endif
 endsubroutine get_direct_list
 
 subroutine initiate_energetic_parameters
@@ -470,3 +585,34 @@ subroutine initiate_energetic_parameters
     write(*,*) "Priblizxonnyje znacxenija potencialov polucxeny iz analiticxeskih. OK"
 
 endsubroutine initiate_energetic_parameters
+
+subroutine  get_direct_list_test_exhaustive(i_a)
+    use positions_mod
+    use interaction_mod
+    implicit none
+
+    integer, intent(in) :: i_a !atom, sosedi kotorogo trebyjetsqa najti
+    integer j,list_atoms_qnt
+    real(8) delx,dely,delz,delc
+    real(8) :: shorting = 1d0!*10d0/11d0
+    delc = cutoff*cutoff*shorting*shorting
+    list_atoms_qnt = 0
+    print*, r_curr(1:3,i_a)
+    IF(I_A .EQ. 25001) OPEN (206, FILE = "25000_exhu.txt")
+    do j=1,atoms__in_total
+        if (j .eq. i_a) cycle
+        delx = r_curr(1,j) - r_curr(1,i_a)
+        dely = r_curr(2,j) - r_curr(2,i_a)
+        delz = r_curr(3,j) - r_curr(3,i_a)
+        if ( delx*delx + dely*dely + delz*delz .gt. delc) cycle
+        list_atoms_qnt = list_atoms_qnt + 1
+        IF(I_A .EQ. 25001) THEN
+
+            PRINT*,"ATOM ",I_A," SOSED DLQA ATOMA ",J, ". RASSTOJANIJE ",SQRT(DELX*DELX + DELY*DELY + DELZ*DELZ)
+            WRITE(206,*)"ATOM ",I_A," SOSED DLQA ATOMA ",J, &
+                ". RASSTOJANIJE ",SQRT(DELX*DELX + DELY*DELY + DELZ*DELZ)
+        ENDIF
+    enddo
+    IF(I_A .EQ. 25001) CLOSE(206)
+    print*, "atom #",i_a," imeet ",list_atoms_qnt," sosedej. Exhaustive "
+endsubroutine get_direct_list_test_exhaustive

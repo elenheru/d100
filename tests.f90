@@ -312,4 +312,99 @@ subroutine test_po_dependencies
 602 format(SP,A,I6.2,A,2(ES12.5e2,1x))
 endsubroutine test_po_dependencies
 
+subroutine test_find_neibors_comparison
+    use lists_assortiment_mod
+    USE INTERACTION_MOD
+    implicit none
 
+    integer i
+        integer ixy,iyz,izx,icl,ia_cand
+
+    print*, "test_find_neibors_comparison ZAPUHXEN "
+    print*, "sravnim skorostq polucxenija sosedej dlqa topornogo algoritma i dlqa jacxeecxnogo "
+    !STOP "pocxemu malo sosedej"
+    call fill_an_by_cn_4d
+    call fill_cn_by_an_4d
+
+    do i = 1,30000,5000
+        call get_direct_list(i)
+        !STOP "testirujem get direct list "
+        call get_direct_list_test_exhaustive(i)
+        call sleep(1)
+    enddo
+
+!        ia_cand = 25001
+!        ixy = an_by_cn_4d(1,ia_cand)
+!        iyz = an_by_cn_4d(2,ia_cand)
+!        izx = an_by_cn_4d(3,ia_cand)
+!        icl = an_by_cn_4d(4,ia_cand)
+!        print*,ia_cand," € 25k µ ",ixy,iyz,izx,icl
+!
+!        ia_cand = 24932
+!        ixy = an_by_cn_4d(1,ia_cand)
+!        iyz = an_by_cn_4d(2,ia_cand)
+!        izx = an_by_cn_4d(3,ia_cand)
+!        icl = an_by_cn_4d(4,ia_cand)
+!        print*,ia_cand," € ",ixy,iyz,izx,icl
+!
+!        ia_cand = 27313
+!        ixy = an_by_cn_4d(1,ia_cand)
+!        iyz = an_by_cn_4d(2,ia_cand)
+!        izx = an_by_cn_4d(3,ia_cand)
+!        icl = an_by_cn_4d(4,ia_cand)
+!        print*,ia_cand," € ",ixy,iyz,izx,icl
+!
+!        ia_cand = 27381
+!        ixy = an_by_cn_4d(1,ia_cand)
+!        iyz = an_by_cn_4d(2,ia_cand)
+!        izx = an_by_cn_4d(3,ia_cand)
+!        icl = an_by_cn_4d(4,ia_cand)
+!        print*,ia_cand," € ",ixy,iyz,izx,icl
+!
+!        ia_cand = 27382
+!        ixy = an_by_cn_4d(1,ia_cand)
+!        iyz = an_by_cn_4d(2,ia_cand)
+!        izx = an_by_cn_4d(3,ia_cand)
+!        icl = an_by_cn_4d(4,ia_cand)
+!        print*,ia_cand," € ",ixy,iyz,izx,icl
+!
+!        ia_cand = 27383
+!        ixy = an_by_cn_4d(1,ia_cand)
+!        iyz = an_by_cn_4d(2,ia_cand)
+!        izx = an_by_cn_4d(3,ia_cand)
+!        icl = an_by_cn_4d(4,ia_cand)
+!        print*,ia_cand," € ",ixy,iyz,izx,icl
+!        do
+!        enddo
+endsubroutine test_find_neibors_comparison
+
+subroutine test_big_array
+    implicit none
+    real(8), allocatable :: bigarray(:)
+    real :: start, finish
+    integer i,j
+    integer(8) k
+    call cpu_time(start)
+    do i=1,nint(2d9),nint(1d4)
+        !do j=1,nint(2d9)
+        allocate(bigarray(i))
+        !print*, sizeof(bigarray), real(i)*8
+        deallocate(bigarray)
+        !enddo
+    enddo
+    call cpu_time(finish)
+    print*, sizeof(bigarray), "time is ", -start + finish
+    !call sleep(3)
+    return
+endsubroutine test_big_array
+
+subroutine test_system_clock
+  INTEGER :: count1, count_rate, count_max
+  INTEGER(8) :: count2, count_rate2, count_max2,count3
+  CALL SYSTEM_CLOCK(count1, count_rate, count_max)
+  WRITE(*,*) count1, count_rate, count_max
+  CALL SYSTEM_CLOCK(count2, count_rate2, count_max2)
+  WRITE(*,*) count2, count_rate2, count_max2
+  CALL SYSTEM_CLOCK(count3, count_rate2, count_max2)
+  WRITE(*,*) count3, count_rate2, count_max2
+endsubroutine

@@ -34,10 +34,13 @@ PROGRAM main
 
     call po_wo_parameters
     call spawn_bcc_rectangular_100
-    CALL TEST_CELL_PARTITION
+    !CALL TEST_CELL_PARTITION
     !CALL TEST_CELL_NEIBORS_4D
     !CALL TEST_CELL_GAP
     !CALL TEST_PO_DEPENDENCIES
+    !call test_big_array
+    CALL TEST_FIND_NEIBORS_COMPARISON
+    !call test_system_clock
 
 ENDPROGRAM
 

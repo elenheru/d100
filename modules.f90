@@ -32,9 +32,9 @@ module      interaction_mod
     use array_parameters_mod
     use phys_parameters_mod
     save
-    real(8), parameter ::   cutoff = 3.5d0*2.5 !sphere where the neighbor is
+    real(8), parameter ::   cutoff = 6.0d0 !sphere where the neighbor is
     real(8)            ::   cutoff_param = cutoff
-    real(8), parameter ::   incell_atoms_exceed = 1650d-3
+    real(8), parameter ::   incell_atoms_exceed = 2650d-3*2
     integer, parameter ::   incell_atoms_max = &
         nint( (16d0*sqrt(3d0)/9d0*(cutoff*sqrt(375d-3))**3)/(5d-1*(a0**3))*incell_atoms_exceed )
 !    integer an_by_cn(3,atoms_max_array)
@@ -226,3 +226,11 @@ endmodule energetic_linappr_mod
 !!    endfunction embeddin_deriv1
 !
 !endmodule   potentials_fefe_linear_mod
+
+module lists_assortiment_mod
+    use interaction_mod
+    save
+    integer, dimension(incell_atoms_max*12) :: list_atoms !atom, sosedi kotorogo trebyjetsqa najtimodule
+    integer :: list_atoms_qnt
+    integer, dimension(4,42) :: list_cells !
+endmodule lists_assortiment_mod
