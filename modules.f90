@@ -1,6 +1,6 @@
 module array_parameters_mod
     save
-    integer, parameter  ::  x_layers= 67,y_layers= 67,z_layers= 6
+    integer, parameter  ::  x_layers= 47,y_layers= 47,z_layers= 4
     integer, parameter  ::  atoms_max_array = nint(&
         (2*x_layers+1)*(2*y_layers+1)*(2*z_layers+1)*21d-1)
     integer             ::  atoms__in_total
@@ -14,6 +14,7 @@ module      positions_mod
     use array_parameters_mod
     save
     real(8), dimension(1:3,atoms_max_array) ::  R_perf,R_curr
+    integer :: last_inbody, last_inmirr
     !vse koordinaty v angstremah
 endmodule   positions_mod
 
@@ -21,6 +22,7 @@ module phys_parameters_mod
     !use comp_parameters_mod
     save
     real(8), parameter  ::  a0 = 2.8600d0
+    real(8), parameter  ::  wall_thickness = a0*3.1d0
     real(8), parameter  ::  aepsilon = 2.8600d-7 !-7 !to avoid match with cells centers positions
     real(8), parameter  ::  poisson=369d-3
     real(8), parameter  ::  burgers=-a0*50d-2*2d0!dislocation is doubled
@@ -53,6 +55,12 @@ module      interaction_mod
     !      x+y>0  ; -x+y>0  ;  y+z>0  ; -y+z>0  ;  z+x>0  ; -z+x>0
 
 endmodule   interaction_mod
+
+module  symmetry_pairs_mod
+    use array_parameters_mod
+    save
+    integer, dimension(atoms_max_array) :: bodymarknumber
+endmodule   symmetry_pairs_mod
 
 module chemical_elements_names_mod
     save

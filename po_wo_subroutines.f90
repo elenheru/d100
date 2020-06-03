@@ -46,6 +46,45 @@ subroutine      wo_xyz_rhcells_4d !#196
 196 format(A2,3(2x,ES11.4))
 endsubroutine   wo_xyz_rhcells_4d
 
+subroutine      wo_xyz_whole_system !#196
+    use positions_mod
+    use wo_counters_mod
+    use chemical_elements_names_mod
+
+    implicit none
+    integer i_atoms,cn
+    character (LEN = 25) filename_trajectory
+
+    xyz__WOcounter=xyz__WOcounter+1
+
+    write(filename_trajectory,'(A,I5.5,A)') "parted_celltest_",xyz__WOcounter,".xyz"
+    open (108, file = filename_trajectory)
+
+    write(108,*) atoms__in_total
+    write(108,*) "image of relaxation # ",xyz__wocounter!," rhombic dodecahedron edge is ", cutoff_param
+
+    do i_atoms=1,last_inbody
+        cn = 26
+        write(108,197) elements_names(2*cn-1:2*cn), r_curr(1:3,i_atoms)
+    enddo
+
+    do i_atoms=1 + last_inbody,last_inmirr
+        cn = 12
+        write(108,197) elements_names(2*cn-1:2*cn), r_curr(1:3,i_atoms)
+    enddo
+
+    do i_atoms=1 + last_inmirr,atoms__in_total
+        cn = 74
+        write(108,197) elements_names(2*cn-1:2*cn), r_curr(1:3,i_atoms)
+    enddo
+
+    if(mod(xyz__WOcounter,25).eq.0)&
+        print'(A,I5.5,A)'," Writing out XYZ picture # ",xyz__WOcounter," . "
+
+    close(108)
+197 format(A2,3(2x,ES11.4))
+endsubroutine   wo_xyz_whole_system
+
 
 
 subroutine po_distances_fcc_vs_pc

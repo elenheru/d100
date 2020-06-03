@@ -586,121 +586,115 @@ subroutine initiate_energetic_parameters
 
 endsubroutine initiate_energetic_parameters
 
-subroutine  get_direct_list_test_exhaustive(i_a)
+subroutine  get_verlet_list(i_a)
     use positions_mod
     use interaction_mod
-    !USE LISTS_ASSORTIMENT_MOD
     implicit none
 
     integer, intent(in) :: i_a !atom, sosedi kotorogo trebyjetsqa najti
     integer j,list_atoms_qnt_loc,omp_get_thread_num
-    real(8) delx,dely,delz,delc
-    !real(8) :: shorting = 1d0!*10d0/11d0
-    delc = cutoff*cutoff!*shorting*shorting
+    real(8) delx,dely,delz,delc,dist2
+
+    delc = cutoff*cutoff
     list_atoms_qnt_loc = 0
-    !PRINT*, R_CURR(1:3,I_A)
-    !IF(I_A .EQ. 25001) OPEN (206, FILE = "25000_exhu.txt")
-    if (.true.) then
-!    !$OMP PARALLEL
-!
-!    !print*, omp_get_thread_num()
-!
-!    if(omp_get_thread_num() .eq. 0) then
-!
-!    do j=1,atoms__in_total/4
-!        delx = r_curr(1,j) - r_curr(1,i_a)
-!        dely = r_curr(2,j) - r_curr(2,i_a)
-!        delz = r_curr(3,j) - r_curr(3,i_a)
-!        if ( delx*delx + dely*dely + delz*delz .gt. delc) cycle
-!        if (j .eq. i_a) cycle
-!!        if ( sqrt(delx*delx + dely*dely + delz*delz) .gt. cutoff) cycle
-!        list_atoms_qnt_loc = list_atoms_qnt_loc + 1
-!!        IF(I_A .EQ. 25001) THEN
-!!
-!!            PRINT*,"ATOM ",I_A," SOSED DLQA ATOMA ",J, ". RASSTOJANIJE ",SQRT(DELX*DELX + DELY*DELY + DELZ*DELZ)
-!!            WRITE(206,*)"ATOM ",I_A," SOSED DLQA ATOMA ",J, &
-!!                ". RASSTOJANIJE ",SQRT(DELX*DELX + DELY*DELY + DELZ*DELZ)
-!!        ENDIF
-!    enddo
-!
-!    endif
-!    if(omp_get_thread_num() .eq. 1) then
-!
-!    do j=1 + atoms__in_total/4, 2*atoms__in_total/4
-!        delx = r_curr(1,j) - r_curr(1,i_a)
-!        dely = r_curr(2,j) - r_curr(2,i_a)
-!        delz = r_curr(3,j) - r_curr(3,i_a)
-!        if ( delx*delx + dely*dely + delz*delz .gt. delc) cycle
-!        if (j .eq. i_a) cycle
-!!        if ( sqrt(delx*delx + dely*dely + delz*delz) .gt. cutoff) cycle
-!        list_atoms_qnt_loc = list_atoms_qnt_loc + 1
-!!        IF(I_A .EQ. 25001) THEN
-!!
-!!            PRINT*,"ATOM ",I_A," SOSED DLQA ATOMA ",J, ". RASSTOJANIJE ",SQRT(DELX*DELX + DELY*DELY + DELZ*DELZ)
-!!            WRITE(206,*)"ATOM ",I_A," SOSED DLQA ATOMA ",J, &
-!!                ". RASSTOJANIJE ",SQRT(DELX*DELX + DELY*DELY + DELZ*DELZ)
-!!        ENDIF
-!    enddo
-!
-!    endif
-!    if(omp_get_thread_num() .eq. 2) then
-!
-!    do j=1+2*atoms__in_total/4,3*atoms__in_total/4
-!        delx = r_curr(1,j) - r_curr(1,i_a)
-!        dely = r_curr(2,j) - r_curr(2,i_a)
-!        delz = r_curr(3,j) - r_curr(3,i_a)
-!        if ( delx*delx + dely*dely + delz*delz .gt. delc) cycle
-!        if (j .eq. i_a) cycle
-!!        if ( sqrt(delx*delx + dely*dely + delz*delz) .gt. cutoff) cycle
-!        list_atoms_qnt_loc = list_atoms_qnt_loc + 1
-!!        IF(I_A .EQ. 25001) THEN
-!!
-!!            PRINT*,"ATOM ",I_A," SOSED DLQA ATOMA ",J, ". RASSTOJANIJE ",SQRT(DELX*DELX + DELY*DELY + DELZ*DELZ)
-!!            WRITE(206,*)"ATOM ",I_A," SOSED DLQA ATOMA ",J, &
-!!                ". RASSTOJANIJE ",SQRT(DELX*DELX + DELY*DELY + DELZ*DELZ)
-!!        ENDIF
-!    enddo
-!
-!    endif
-!    if(omp_get_thread_num() .eq. 3) then
-!
-!    do j=1+3*atoms__in_total/4, atoms__in_total
-!!        print*,j
-!        delx = r_curr(1,j) - r_curr(1,i_a)
-!        dely = r_curr(2,j) - r_curr(2,i_a)
-!        delz = r_curr(3,j) - r_curr(3,i_a)
-!        if ( delx*delx + dely*dely + delz*delz .gt. delc) cycle
-!        if (j .eq. i_a) cycle
-!!        if ( sqrt(delx*delx + dely*dely + delz*delz) .gt. cutoff) cycle
-!        list_atoms_qnt_loc = list_atoms_qnt_loc + 1
-!!        IF(I_A .EQ. 25001) THEN
-!!
-!!            PRINT*,"ATOM ",I_A," SOSED DLQA ATOMA ",J, ". RASSTOJANIJE ",SQRT(DELX*DELX + DELY*DELY + DELZ*DELZ)
-!!            WRITE(206,*)"ATOM ",I_A," SOSED DLQA ATOMA ",J, &
-!!                ". RASSTOJANIJE ",SQRT(DELX*DELX + DELY*DELY + DELZ*DELZ)
-!!        ENDIF
-!    enddo
-!
-!    endif
-!    !$OMP END PARALLEL
-    else
+
     do j=1,atoms__in_total
         delx = r_curr(1,j) - r_curr(1,i_a)
         dely = r_curr(2,j) - r_curr(2,i_a)
         delz = r_curr(3,j) - r_curr(3,i_a)
-        if ( delx*delx + dely*dely + delz*delz .gt. delc) cycle
+        dist2 = delx*delx + dely*dely + delz*delz
+        if ( dist2 .gt. delc ) cycle
         if (j .eq. i_a) cycle
-!        if ( sqrt(delx*delx + dely*dely + delz*delz) .gt. cutoff) cycle
+
         list_atoms_qnt_loc = list_atoms_qnt_loc + 1
-!        IF(I_A .EQ. 25001) THEN
-!
-!            PRINT*,"ATOM ",I_A," SOSED DLQA ATOMA ",J, ". RASSTOJANIJE ",SQRT(DELX*DELX + DELY*DELY + DELZ*DELZ)
-!            WRITE(206,*)"ATOM ",I_A," SOSED DLQA ATOMA ",J, &
-!                ". RASSTOJANIJE ",SQRT(DELX*DELX + DELY*DELY + DELZ*DELZ)
-!        ENDIF
     enddo
-    endif
-    !IF(I_A .EQ. 25001) CLOSE(206)
-    !print*, "atom #",i_a," imeet ",list_atoms_qnt_loc," sosedej. Exhaustive "
-    !IF ( LIST_ATOMS_QNT .NE. LIST_ATOMS_QNT_LOC ) STOP " MISMATCH "
-endsubroutine get_direct_list_test_exhaustive
+
+endsubroutine get_verlet_list
+
+subroutine part_and_sort_three_zones_100
+    use positions_mod
+    use phys_parameters_mod
+    implicit none
+    real(8) a_half
+    integer cnt_x, cnt_y, cnt_z, cnt_q
+    integer i_atp, i_atc
+
+    !print*,cells_xrange,cells_yrange,cells_zrange," eto x y z cells range"
+
+    i_atc = 0
+
+    do i_atp = 1,atoms__in_total
+        if ( ( norm2( R_perf(1:2,i_atp) ) .lt. x_layers*a0 - wall_thickness ) .and. &
+             ( abs(   R_perf(3,  i_atp) ) .lt. z_layers*a0 - wall_thickness ) ) then
+            if (atoms__in_total .le. i_atc) stop "error 1"
+            i_atc = i_atc + 1
+            R_curr(1:3,i_atc) = R_perf(1:3,i_atp)
+        endif
+    enddo
+
+    last_inbody = i_atc
+
+    do i_atp = 1,atoms__in_total
+        if ( ( norm2( R_perf(1:2,i_atp) ) .lt. x_layers*a0 - wall_thickness ) .and. &
+             ( abs(   R_perf(3,  i_atp) ) .gt. z_layers*a0 - wall_thickness ) ) then
+            if (atoms__in_total .le. i_atc) stop "error 2"
+            i_atc = i_atc + 1
+            R_curr(1:3,i_atc) = R_perf(1:3,i_atp)
+        endif
+    enddo
+
+    last_inmirr = i_atc
+
+    do i_atp = 1,atoms__in_total
+        if ( norm2( R_perf(1:2,i_atp) ) .gt. x_layers*a0 - wall_thickness )  then
+            if (atoms__in_total .le. i_atc) stop "error 3"
+            i_atc = i_atc + 1
+            R_curr(1:3,i_atc) = R_perf(1:3,i_atp)
+        endif
+    enddo
+
+    if (atoms__in_total .gt. i_atc) stop "poterqalisq atomy v processe razdelenija na zony"
+    R_perf = R_curr
+
+    print 107, " Sistema razbita na zony. Vsego atomov: ", i_atc," ; "
+    print 106, " Osnovnaja jacxejka : ",last_inbody," atomov." // &
+        " Dublirujuhxije sloi : ",last_inmirr-last_inbody," atomov." // &
+        " Uprugaja zona ",1+i_atc-last_inmirr,&
+        "; tolsxina uprugoj zony (stenki) >= ", wall_thickness, " angstrem "
+
+106 format  (3(A,1x,I7.3,1x),A,F8.4,A)
+107 format  (A,I10.3,A,$)
+endsubroutine part_and_sort_three_zones_100
+
+
+
+subroutine find_symmetric_pairs_100
+    use positions_mod
+    use symmetry_pairs_mod
+    use phys_parameters_mod
+    implicit none
+    !real(8) a_half
+    !integer cnt_x, cnt_y, cnt_z, cnt_q
+    integer i_atb, i_atp
+
+    bodymarknumber = -1
+
+    print*,"Ihxem simmetricxnyje pary."
+
+    do i_atp = 1 + last_inbody, last_inmirr
+        do i_atb = 1, last_inbody
+            if ( ( norm2( R_perf(1:2,i_atp) - R_perf(1:2,i_atb) ) .lt. 1d-2 ) .and. &
+                 ( R_perf(3,  i_atb) .lt. a0*6d-1 ) .and. &
+                 ( R_perf(3,  i_atb) .gt.   -1d-2 ) ) then
+                bodymarknumber(i_atp) = i_atb
+            endif
+        enddo
+        if (bodymarknumber(i_atp) .eq. -1) then
+            print*, "cant find pair for atom ", i_atp
+            print*, R_perf(1:3,i_atp)
+            stop "cant find pair"
+        endif
+    enddo
+
+    print *, " Najdeny vse pary "
+endsubroutine find_symmetric_pairs_100

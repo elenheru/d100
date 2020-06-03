@@ -318,8 +318,9 @@ subroutine test_find_neibors_comparison
     use array_parameters_mod
     implicit none
 
-    integer i,omp_get_thread_num
-    INTEGER(8) :: ct1,ct2,ct3,ct4
+    integer i,omp_get_thread_num,rep,repmax
+    INTEGER(8) :: ct1,ct2,ct3,ct4,ct5
+    INTEGER(8) :: ct6,ct7,ct8,ct9,ct0
 
     print*, "test_find_neibors_comparison ZAPUHXEN "
     print*, "sravnim skorostq polucxenija sosedej dlqa topornogo algoritma i dlqa jacxeecxnogo "
@@ -327,54 +328,158 @@ subroutine test_find_neibors_comparison
     call fill_an_by_cn_4d
     call fill_cn_by_an_4d
 
-    CALL SYSTEM_CLOCK(ct1)
+    repmax=40
 
+    CALL SYSTEM_CLOCK(ct1)
+        !DO REP=1,REPMAX
     do i = 1,atoms__in_total
         call get_direct_list(i)
     enddo
-
+        !ENDDO
     CALL SYSTEM_CLOCK(ct2)
 
+        DO REP=1,REPMAX
     do i = 1,atoms__in_total
         call get_direct_list_test_exhaustive(i)
-        print*,i
+        !print*,i
     enddo
-
+        ENDDO
     CALL SYSTEM_CLOCK(ct3)
-!
-!    !$OMP PARALLEL
-!    print*, omp_get_thread_num()
-!    if(omp_get_thread_num() .eq. 0) then
-!        do i = 1 , atoms__in_total/4
-!        call get_direct_list_test_exhaustive(i)
-!        enddo
-!    endif
-!    if(omp_get_thread_num() .eq. 1) then
-!        do i = 1 +   atoms__in_total/4 , 2*atoms__in_total/4
-!        call get_direct_list_test_exhaustive(i)
-!        enddo
-!    endif
-!    if(omp_get_thread_num() .eq. 2) then
-!        do i = 1 + 2*atoms__in_total/4 , 3*atoms__in_total/4
-!        call get_direct_list_test_exhaustive(i)
-!        enddo
-!    endif
-!    if(omp_get_thread_num() .eq. 3) then
-!        do i = 1 + 3*atoms__in_total/4 ,   atoms__in_total
-!        call get_direct_list_test_exhaustive(i)
-!        enddo
-!    endif
-!    !$OMP END PARALLEL
 
+        DO REP=1,REPMAX
+    !$OMP PARALLEL
+    print*, omp_get_thread_num()
+    if(omp_get_thread_num() .eq. 0) then
+        do i = 1 , atoms__in_total/4
+        !call get_direct_list_test_exhaustive(i)
+        !call get_direct_list(i)
+        enddo
+    endif
+    if(omp_get_thread_num() .eq. 1) then
+        do i = 1 +   atoms__in_total/4 , 2*atoms__in_total/4
+        !call get_direct_list_test_exhaustive(i)
+        !call get_direct_list(i)
+        enddo
+    endif
+    if(omp_get_thread_num() .eq. 2) then
+        do i = 1 + 2*atoms__in_total/4 , 3*atoms__in_total/4
+        !call get_direct_list_test_exhaustive(i)
+        !call get_direct_list(i)
+        enddo
+    endif
+    if(omp_get_thread_num() .eq. 3) then
+        do i = 1 + 3*atoms__in_total/4 ,   atoms__in_total
+        !call get_direct_list_test_exhaustive(i)
+        !call get_direct_list(i)
+        enddo
+    endif
+    !$OMP END PARALLEL
+        ENDDO
     CALL SYSTEM_CLOCK(ct4)
+        DO REP=1,REPMAX
+    !$OMP PARALLEL PRIVATE(I)
+    print*, omp_get_thread_num()
+    if(omp_get_thread_num() .eq. 0) then
+        do i = 1 , atoms__in_total/4
+        call get_direct_list_test_exhaustive(i)
+        !call get_direct_list(i)
+        enddo
+    endif
+    if(omp_get_thread_num() .eq. 1) then
+        do i = 1 +   atoms__in_total/4 , 2*atoms__in_total/4
+        call get_direct_list_test_exhaustive(i)
+        !call get_direct_list(i)
+        enddo
+    endif
+    if(omp_get_thread_num() .eq. 2) then
+        do i = 1 + 2*atoms__in_total/4 , 3*atoms__in_total/4
+        call get_direct_list_test_exhaustive(i)
+        !call get_direct_list(i)
+        enddo
+    endif
+    if(omp_get_thread_num() .eq. 3) then
+        do i = 1 + 3*atoms__in_total/4 ,   atoms__in_total
+        call get_direct_list_test_exhaustive(i)
+        !call get_direct_list(i)
+        enddo
+    endif
+    !$OMP END PARALLEL
+        ENDDO
+    CALL SYSTEM_CLOCK(ct5)
 
+        DO REP=1,REPMAX
+    !$OMP SECTIONS PRIVATE(I)
+    print*, omp_get_thread_num()
+    !$OMP SECTION
+    do i = 1 , atoms__in_total/4
+        call get_direct_list_test_exhaustive(i)
+    enddo
+    !$OMP SECTION
+    do i = 1 +   atoms__in_total/4 , 2*atoms__in_total/4
+        call get_direct_list_test_exhaustive(i)
+    enddo
+    !$OMP SECTION
+    do i = 1 + 2*atoms__in_total/4 , 3*atoms__in_total/4
+        call get_direct_list_test_exhaustive(i)
+    enddo
+    !$OMP SECTION
+    do i = 1 + 3*atoms__in_total/4 ,   atoms__in_total
+        call get_direct_list_test_exhaustive(i)
+    enddo
+    !$OMP END SECTIONS
+        ENDDO
+
+    CALL SYSTEM_CLOCK(ct6)
 
     write(*,*) "ticks get_direct_list            ",(ct2-ct1)*1d-6," ms"
     write(*,*) "ticks get_direct_list exhaustive ",(ct3-ct2)*1d-6," ms"
-    write(*,*) "ticks get_direct_list exhaustive ",(ct4-ct3)*1d-6," ms (parallel)"
+    write(*,*) "ticks get_direct_list exhaustive ",(ct4-ct3)*1d-6," ms (parallel) nothing to do"
+    write(*,*) "ticks get_direct_list exhaustive ",(ct5-ct4)*1d-6," ms (parallel)"
+    write(*,*) "ticks get_direct_list exhaustive ",(ct6-ct5)*1d-6," ms (parallel sections)"
     write(*,*) "ticks sum ",(ct3-ct1)*1d-6," ms"
 
 endsubroutine test_find_neibors_comparison
+
+subroutine test_find_neibors_comparison_2
+    use lists_assortiment_mod
+    USE INTERACTION_MOD
+    use array_parameters_mod
+    implicit none
+
+    integer i,omp_get_thread_num,rep,repmax
+    INTEGER(8) :: ct1,ct2,ct3,ct4,ct5
+    INTEGER(8) :: ct6,ct7,ct8,ct9,ct0
+
+    print*, "test_find_neibors_comparison ZAPUHXEN "
+    print*, "sravnim skorostq polucxenija sosedej dlqa topornogo algoritma i dlqa jacxeecxnogo "
+    !STOP "pocxemu malo sosedej"
+    call fill_an_by_cn_4d
+    call fill_cn_by_an_4d
+
+    repmax=40
+
+
+    CALL SYSTEM_CLOCK(ct2)
+        DO REP=1,REPMAX
+    do i = 1,atoms__in_total
+        call get_direct_list_test_exhaustive(i)
+    enddo
+        ENDDO
+    CALL SYSTEM_CLOCK(ct3)
+        DO REP=1,REPMAX
+    do i = 1,atoms__in_total
+        call get_direct_list_test_exhaustive_linrej(i)
+    enddo
+        ENDDO
+    CALL SYSTEM_CLOCK(ct4)
+
+
+
+    print*, "ticks get_direct_list exhaustive ",(ct3-ct2)*1d-6," ms. only distance"
+    print*, "ticks get_direct_list exhaustive ",(ct4-ct3)*1d-6," ms. linear rejections"
+
+
+endsubroutine test_find_neibors_comparison_2
 
 subroutine test_big_array
     implicit none

@@ -3,23 +3,11 @@ PROGRAM main
     use interaction_mod, only : incell_atoms_max
     implicit none
     !integer i,ri
-    real(8) bi,ri
+    !real(8) bi,ri
     !integer getrandom_int_fromto_inclusive
 
 
     call random_seed()
-!
-!    do i = 1,118
-!!        print*, "this is element #",i,elements_names(2*i-1:2*i)
-!        ri = getrandom_int_fromto_inclusive(-10,10)
-!        print*,"slucxajnyj integer [-10,10] = ", ri
-!    enddo
-    !stop "ri test"
-    bi=-10d0
-    ri=sqrt(bi)
-
-
-    print *, mod(-5,2),isnan(ri)
 
     print *, "Eta programma budet vycxislqatq strukturu jadra dislokacii …"
     print *, "s vektorom bqurgersa po napravleniiju 100 v OCK zxeleze."
@@ -39,9 +27,13 @@ PROGRAM main
     !CALL TEST_CELL_GAP
     !CALL TEST_PO_DEPENDENCIES
     !call test_big_array
-    CALL TEST_FIND_NEIBORS_COMPARISON
+    !CALL TEST_FIND_NEIBORS_COMPARISON
+    !CALL TEST_FIND_NEIBORS_COMPARISON_2
     !call test_system_clock
-    call wo_xyz_rhcells_4d
+    call part_and_sort_three_zones_100
+    call find_symmetric_pairs_100
+
+    call wo_xyz_whole_system
 ENDPROGRAM
 
 !
