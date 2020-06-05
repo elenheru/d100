@@ -21,6 +21,7 @@ PROGRAM main
     print *, ""
 
     call test_quadratic_minimizer
+    !call test_randomwalk_minimizer
     STOP " TEST"
     call po_wo_parameters
     call spawn_bcc_rectangular_100
