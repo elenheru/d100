@@ -20,6 +20,8 @@ PROGRAM main
     print *, "TODO : V procedure polucxajuhxej spiski atomov"
     print *, ""
 
+    call test_quadratic_minimizer
+    STOP " TEST"
     call po_wo_parameters
     call spawn_bcc_rectangular_100
     !CALL TEST_CELL_PARTITION

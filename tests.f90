@@ -511,3 +511,239 @@ subroutine test_system_clock
   CALL SYSTEM_CLOCK(count3, count_rate2, count_max2)
   WRITE(*,*) count3, count_rate2, count_max2
 endsubroutine
+
+subroutine test_solve_linsystem(A,n,b,rv)
+    implicit none
+    integer,intent(in) :: n
+    real(8),intent(in),dimension(n,n) :: A
+    real(8),intent(in),dimension(n) :: rv
+    real(8),intent(inout),dimension(n) :: b
+    !ihxem vector b, takoj, cxto A*b=rv
+    STOP "not implemented"
+endsubroutine test_solve_linsystem
+
+subroutine test_quadratic_minimizer
+    implicit none
+    !E = E_0 + F_x*(x-x_min)^2 + F_y*(y-y_min)^2 + F_z*(z-z_min)^2
+    !v takom predpolozxenii popytajemsqa najti r_m
+    integer imin
+    real(8) :: dw = 1d-3
+    real(8) d_x, d_y, d_z
+    real(8) e_111, e_211, e_311
+    real(8)        e_121, e_131
+    real(8)        e_112, e_113
+    real(8),dimension(3) :: r_min, drpos,drneg, r_st
+    real(8) x_min,y_min,z_min
+    real(8) x_1,y_1,z_1
+    real(8) x_2,y_2,z_2
+    real(8) x_3,y_3,z_3
+
+    call random_number(r_st)
+    call random_number(drpos)
+    call random_number(drneg)
+
+    drpos = dw * drpos + (/dw,dw,dw/)
+    drneg =-dw * drneg - (/dw,dw,dw/)
+    r_st = 6d-1 * (r_st*2d0 - (/1d0,1d0,1d0/) )
+
+    x_1 = r_st(1) + drneg(1)
+    x_2 = r_st(1)
+    x_3 = r_st(1) + drpos(1)
+
+    y_1 = r_st(2) + drneg(2)
+    y_2 = r_st(2)
+    y_3 = r_st(2) + drpos(2)
+
+    z_1 = r_st(3) + drneg(3)
+    z_2 = r_st(3)
+    z_3 = r_st(3) + drpos(3)
+
+    do imin=1,30!0!00
+        e_111 = ftest_e_tomin( x_1 , y_1 , z_1 )
+
+        e_211 = ftest_e_tomin( x_2 , y_1 , z_1 )
+        e_311 = ftest_e_tomin( x_3 , y_1 , z_1 )
+
+        e_121 = ftest_e_tomin( x_1 , y_2 , z_1 )
+        e_131 = ftest_e_tomin( x_1 , y_3 , z_1 )
+
+        e_112 = ftest_e_tomin( x_1 , y_1 , z_2 )
+        e_113 = ftest_e_tomin( x_1 , y_1 , z_3 )
+
+        d_x = -1d0 + ( ( e_111-e_211 )*( x_2 - x_3 ) )/( ( e_211-e_311 )*( x_1 - x_2 ) )
+        d_y = -1d0 + ( ( e_111-e_121 )*( y_2 - y_3 ) )/( ( e_121-e_131 )*( y_1 - y_2 ) )
+        d_z = -1d0 + ( ( e_111-e_112 )*( z_2 - z_3 ) )/( ( e_112-e_113 )*( z_1 - z_2 ) )
+
+        r_min(1) = 5d-1*( x_2 + x_3  + ( x_3 - x_1 )/d_x  )
+        r_min(2) = 5d-1*( y_2 + y_3  + ( y_3 - y_1 )/d_y  )
+        r_min(3) = 5d-1*( z_2 + z_3  + ( z_3 - z_1 )/d_z  )
+
+
+!        print'(A,3(1x,F17.12))', "v prqamougolqnoj okrestnosti tocxki ", r_st
+!        print 249, "[ ", r_st(1)+drneg(1), " , ", r_st(1)+drpos(1), " ]"
+!        print 249, "[ ", r_st(2)+drneg(2), " , ", r_st(2)+drpos(2), " ]"
+!        print 249, "[ ", r_st(3)+drneg(3), " , ", r_st(3)+drpos(3), " ]"
+!        print*, d_x, d_y, d_z
+        print'(A,I6.1,A,3(1x,F11.5))', "  za ",imin," iteracij nasxli takoj minimum ", r_min
+        print*, "_______",norm2(r_min),"_______:"
+
+        r_st = r_min
+
+
+        call random_number(drpos)
+        call random_number(drneg)
+
+        drpos = dw * drpos + (/dw,dw,dw/)
+        drneg =-dw * drneg - (/dw,dw,dw/)
+
+        x_1 = r_st(1) + drneg(1)
+        x_2 = r_st(1)
+        x_3 = r_st(1) + drpos(1)
+
+        y_1 = r_st(2) + drneg(2)
+        y_2 = r_st(2)
+        y_3 = r_st(2) + drpos(2)
+
+        z_1 = r_st(3) + drneg(3)
+        z_2 = r_st(3)
+        z_3 = r_st(3) + drpos(3)
+    enddo
+    !rp=test_e_tomin(1d0,1d0,1d0)
+
+    249 format (SP,A,F8.5,A,F8.5,A,$)
+    contains
+        real(8) function ftest_e_tomin(x,y,z)
+            real(8),intent(in) :: x,y,z
+!            ftest_e_tomin = &
+!            (x**6 + y**6 + z**6) + &
+!            (x**2 + y**2 + z**2)*9d-4 + &
+!            (x**4 + y**4 + z**4)
+!            ftest_e_tomin = &
+!                sin(x+y+z)**2 + &
+!                sin(x+y-z)**2 + &
+!                sin(x-y+z)**2 + &
+!                sin(x-y-z)**2 + &
+!                x*x*1d-5 + &
+!                y*y*1d-5 + &
+!                z*z*1d-5
+            ftest_e_tomin = &
+                x*x*1d-5 + &
+                y*y*1d-5 + &
+                z*z*1d-5 + &
+                (x*y + y*z + z*x)*1d-6
+        endfunction
+
+endsubroutine test_quadratic_minimizer
+
+subroutine test_randomwalk_minimizer
+    implicit none
+    !E = E_0 + F_x*(x-x_min)^2 + F_y*(y-y_min)^2 + F_z*(z-z_min)^2
+    !v takom predpolozxenii popytajemsqa najti r_m
+    integer imin
+    real(8) :: dw = 1d-3
+    real(8) d_x, d_y, d_z
+    real(8) e_111, e_211, e_311
+    real(8)        e_121, e_131
+    real(8)        e_112, e_113
+    real(8),dimension(3) :: r_min, drpos,drneg, r_st
+    real(8) x_min,y_min,z_min
+    real(8) x_1,y_1,z_1
+    real(8) x_2,y_2,z_2
+    real(8) x_3,y_3,z_3
+
+    call random_number(r_st)
+    call random_number(drpos)
+    call random_number(drneg)
+
+    drpos = dw * drpos + (/dw,dw,dw/)
+    drneg =-dw * drneg - (/dw,dw,dw/)
+    r_st = 6d-1 * (r_st*2d0 - (/1d0,1d0,1d0/) )
+
+    x_1 = r_st(1) + drneg(1)
+    x_2 = r_st(1)
+    x_3 = r_st(1) + drpos(1)
+
+    y_1 = r_st(2) + drneg(2)
+    y_2 = r_st(2)
+    y_3 = r_st(2) + drpos(2)
+
+    z_1 = r_st(3) + drneg(3)
+    z_2 = r_st(3)
+    z_3 = r_st(3) + drpos(3)
+
+    do imin=1,30!0!00
+        e_111 = ftest_e_tomin( x_1 , y_1 , z_1 )
+
+        e_211 = ftest_e_tomin( x_2 , y_1 , z_1 )
+        e_311 = ftest_e_tomin( x_3 , y_1 , z_1 )
+
+        e_121 = ftest_e_tomin( x_1 , y_2 , z_1 )
+        e_131 = ftest_e_tomin( x_1 , y_3 , z_1 )
+
+        e_112 = ftest_e_tomin( x_1 , y_1 , z_2 )
+        e_113 = ftest_e_tomin( x_1 , y_1 , z_3 )
+
+        d_x = -1d0 + ( ( e_111-e_211 )*( x_2 - x_3 ) )/( ( e_211-e_311 )*( x_1 - x_2 ) )
+        d_y = -1d0 + ( ( e_111-e_121 )*( y_2 - y_3 ) )/( ( e_121-e_131 )*( y_1 - y_2 ) )
+        d_z = -1d0 + ( ( e_111-e_112 )*( z_2 - z_3 ) )/( ( e_112-e_113 )*( z_1 - z_2 ) )
+
+        r_min(1) = 5d-1*( x_2 + x_3  + ( x_3 - x_1 )/d_x  )
+        r_min(2) = 5d-1*( y_2 + y_3  + ( y_3 - y_1 )/d_y  )
+        r_min(3) = 5d-1*( z_2 + z_3  + ( z_3 - z_1 )/d_z  )
+
+
+!        print'(A,3(1x,F17.12))', "v prqamougolqnoj okrestnosti tocxki ", r_st
+!        print 249, "[ ", r_st(1)+drneg(1), " , ", r_st(1)+drpos(1), " ]"
+!        print 249, "[ ", r_st(2)+drneg(2), " , ", r_st(2)+drpos(2), " ]"
+!        print 249, "[ ", r_st(3)+drneg(3), " , ", r_st(3)+drpos(3), " ]"
+!        print*, d_x, d_y, d_z
+        print'(A,I6.1,A,3(1x,F11.5))', "  za ",imin," iteracij nasxli takoj minimum ", r_min
+        print*, "_______",norm2(r_min),"_______:"
+
+        r_st = r_min
+
+
+        call random_number(drpos)
+        call random_number(drneg)
+
+        drpos = dw * drpos + (/dw,dw,dw/)
+        drneg =-dw * drneg - (/dw,dw,dw/)
+
+        x_1 = r_st(1) + drneg(1)
+        x_2 = r_st(1)
+        x_3 = r_st(1) + drpos(1)
+
+        y_1 = r_st(2) + drneg(2)
+        y_2 = r_st(2)
+        y_3 = r_st(2) + drpos(2)
+
+        z_1 = r_st(3) + drneg(3)
+        z_2 = r_st(3)
+        z_3 = r_st(3) + drpos(3)
+    enddo
+    !rp=test_e_tomin(1d0,1d0,1d0)
+
+    249 format (SP,A,F8.5,A,F8.5,A,$)
+    contains
+        real(8) function ftest_e_tomin(x,y,z)
+            real(8),intent(in) :: x,y,z
+!            ftest_e_tomin = &
+!            (x**6 + y**6 + z**6) + &
+!            (x**2 + y**2 + z**2)*9d-4 + &
+!            (x**4 + y**4 + z**4)
+!            ftest_e_tomin = &
+!                sin(x+y+z)**2 + &
+!                sin(x+y-z)**2 + &
+!                sin(x-y+z)**2 + &
+!                sin(x-y-z)**2 + &
+!                x*x*1d-5 + &
+!                y*y*1d-5 + &
+!                z*z*1d-5
+            ftest_e_tomin = &
+                x*x*1d-5 + &
+                y*y*1d-5 + &
+                z*z*1d-5 + &
+                (x*y + y*z + z*x)*1d-6
+        endfunction
+
+endsubroutine test_randomwalk_minimizer
