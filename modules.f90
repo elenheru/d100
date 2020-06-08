@@ -245,12 +245,13 @@ endmodule lists_assortiment_mod
 module verlet_lists_mod
     !use array_parameters_mod
     save
-    integer, parameter :: neibors_max = 120
-    integer atom_n! dlqa kakogo atoma hranim spisok
-    integer vl_len! skolqko atomov v spiske
-    integer verlet_list(neibors_max)
-    real(8) distan_list(neibors_max)
-    real(8) alm_ed_list(neibors_max) !elektronnyje plotnosti dlqa sosedej, krome vklada centralqnogo atoma
-    real(8) eldens_list(neibors_max) !elektronnyje plotnosti dlqa sosedej
-    integer verlet_list_long(neibors_max*8) !inside double cutoff
+    integer, parameter :: neibors_max = 75
+    integer :: atom_n! dlqa kakogo atoma hranim spisok
+    integer :: vl_len! skolqko atomov v spiske
+    integer :: vl_len_ext! skolqko atomov v spiske
+    integer :: verlet_list(neibors_max)
+    integer :: verlet_list_long(neibors_max*12) !inside double cutoff
+    real(8) :: distan_list(neibors_max)
+    real(8) :: alm_ed_list(neibors_max) !elektronnyje plotnosti dlqa sosedej, krome vklada centralqnogo atoma
+    real(8) :: eldens_list(neibors_max) !elektronnyje plotnosti dlqa sosedej
 endmodule verlet_lists_mod

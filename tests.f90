@@ -456,21 +456,24 @@ subroutine test_find_neibors_comparison_2
     call fill_an_by_cn_4d
     call fill_cn_by_an_4d
 
-    repmax=400
+    repmax=40
 
 
     CALL SYSTEM_CLOCK(ct2)
         DO REP=1,REPMAX
+        PRINT*, REP
     do i = 1,atoms__in_total
-        call get_verlet_list(i)
-        !call get_direct_list_test_exhaustive_linrej(i)
+        !PRINT*, I
+        !call get_verlet_list_short(i)
+        call get_direct_list_test_exhaustive_linrej(i)
     enddo
         ENDDO
     CALL SYSTEM_CLOCK(ct3)
         DO REP=1,REPMAX
+        PRINT*, REP
     do i = 1,atoms__in_total
-        !call get_verlet_list(i)
-        call get_direct_list_test_exhaustive_linrej(i)
+        call get_verlet_list_short(i)
+        !call get_direct_list_test_exhaustive_linrej(i)
     enddo
         ENDDO
     CALL SYSTEM_CLOCK(ct4)
@@ -790,3 +793,19 @@ subroutine test_randomwalk_minimizer
         endfunction
 
 endsubroutine test_randomwalk_minimizer
+
+subroutine test_energy_atom_origin
+    use positions_mod
+    implicit none
+    integer i_atoms
+    real(8) :: e_a
+
+    print*, " test_energy_atom_origin "
+
+    do i_atoms=1,atoms__in_total
+        if( norm2( r_curr(1:3,i_atoms) ) .gt. 1d-3) cycle
+        call atom_energy(i_atoms,e_a)
+        print*, e_a, "", i_atoms
+    enddo
+
+endsubroutine test_energy_atom_origin

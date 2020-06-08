@@ -586,23 +586,91 @@ subroutine initiate_energetic_parameters
 
 endsubroutine initiate_energetic_parameters
 
-subroutine  get_verlet_list(i_a)
+subroutine  get_verlet_list_long(i_a)
+    !use array_parameters_mod
     use positions_mod
-    use interaction_mod
+    use interaction_mod, only : cutoff
     use verlet_lists_mod
     implicit none
-    !use array_parameters_mod
-
     integer, intent(in) :: i_a !atom, sosedi kotorogo trebyjetsqa najti
     integer j,list_atoms_qnt_loc,omp_get_thread_num
     real(8) delx,dely,delz,delc,dist2
 
+
+        integer :: l_vl_len! skolqko atomov v spiske
+        integer :: l_vl_len_ext! skolqko atomov v spiske
+        integer :: l_verlet_list(neibors_max)
+        integer :: l_verlet_list_long(neibors_max*12) !inside double cutoff
+        real(8) :: l_distan_list(neibors_max)
+        !real(8) :: l_alm_ed_list(neibors_max) !elektronnyje plotnosti dlqa sosedej, krome vklada centralqnogo atoma
+        !real(8) :: l_eldens_list(neibors_max) !elektronnyje plotnosti dlqa sosedej
+
     atom_n = i_a
     delc = cutoff*cutoff
-    vl_len = 0
+
+    l_vl_len = 0
+    l_vl_len_ext = 0
 
     do j=1,atoms__in_total
 
+        delx = r_curr(1,j) - r_curr(1,i_a)
+        if ( delx .gt.  cutoff*2) cycle
+        if ( delx .lt. -cutoff*2) cycle
+        dely = r_curr(2,j) - r_curr(2,i_a)
+        if ( dely .gt.  cutoff*2) cycle
+        if ( dely .lt. -cutoff*2) cycle
+        delz = r_curr(3,j) - r_curr(3,i_a)
+        if ( delz .gt.  cutoff*2) cycle
+        if ( delz .lt. -cutoff*2) cycle
+
+        dist2 = delx*delx + dely*dely + delz*delz
+        if ( dist2 .gt. delc*4 ) cycle
+
+        l_vl_len_ext = l_vl_len_ext + 1
+        !PRINT*,J," J-",L_VL_LEN_EXT
+        l_verlet_list_long(l_vl_len_ext) = j
+
+        if ( delx .gt.  cutoff) cycle
+        if ( delx .lt. -cutoff) cycle
+        if ( dely .gt.  cutoff) cycle
+        if ( dely .lt. -cutoff) cycle
+        if ( delz .gt.  cutoff) cycle
+        if ( delz .lt. -cutoff) cycle
+        if ( dist2 .gt. delc ) cycle
+
+        if (j .eq. i_a) cycle
+        l_vl_len = l_vl_len + 1
+        !PRINT*,J," J+",L_VL_LEN
+        l_verlet_list(l_vl_len) = j
+        l_distan_list(l_vl_len) = sqrt(dist2)
+    enddo
+
+    !PRINT*,VL_LEN_EXT,VL_LEN,I_A," i_a"
+    !CALL SLEEP(1)
+    vl_len = l_vl_len
+    vl_len_ext = l_vl_len_ext
+    distan_list = l_distan_list
+    verlet_list = l_verlet_list
+    verlet_list_long = l_verlet_list_long
+
+endsubroutine get_verlet_list_long
+
+subroutine  get_verlet_list_short(i_a)
+    !use array_parameters_mod
+    use positions_mod
+    use interaction_mod, only : cutoff
+    use verlet_lists_mod
+    implicit none
+    integer, intent(in) :: i_a !atom, sosedi kotorogo trebyjetsqa najti
+    integer j
+    real(8) delx,dely,delz,delc,dist2
+
+    atom_n = i_a
+    delc = cutoff*cutoff
+
+    vl_len = 0
+
+    do j=1,atoms__in_total
         delx = r_curr(1,j) - r_curr(1,i_a)
         if ( delx .gt.  cutoff) cycle
         if ( delx .lt. -cutoff) cycle
@@ -614,15 +682,20 @@ subroutine  get_verlet_list(i_a)
         if ( delz .lt. -cutoff) cycle
 
         dist2 = delx*delx + dely*dely + delz*delz
+
         if ( dist2 .gt. delc ) cycle
         if (j .eq. i_a) cycle
 
         vl_len = vl_len + 1
+        !PRINT*,J," J+",VL_LEN," dist ",dist2
         verlet_list(vl_len) = j
         distan_list(vl_len) = sqrt(dist2)
     enddo
 
-endsubroutine get_verlet_list
+    !PRINT*,VL_LEN_EXT,VL_LEN,I_A," i_a"
+    !CALL SLEEP(1)
+
+endsubroutine get_verlet_list_short
 
 subroutine part_and_sort_three_zones_100
     use positions_mod
@@ -680,7 +753,6 @@ subroutine part_and_sort_three_zones_100
 endsubroutine part_and_sort_three_zones_100
 
 
-
 subroutine find_symmetric_pairs_100
     use positions_mod
     use symmetry_pairs_mod
@@ -711,3 +783,33 @@ subroutine find_symmetric_pairs_100
 
     print *, " Najdeny vse pary "
 endsubroutine find_symmetric_pairs_100
+
+
+subroutine  atom_energy(i_a,e_a)
+    use verlet_lists_mod
+    USE ACKLAND2003POTENTIAL_FE_MOD
+    implicit none
+    integer, intent(in) :: i_a
+    real(8), intent(inout) :: e_a
+    real(8) :: eld,iip,dist
+    real(8) :: ed_fefe_la
+    real(8) :: pw_fefe_la
+    real(8) :: mf_fe_la
+    integer :: n_n,n_a
+
+    call get_verlet_list_short(i_a)
+
+    eld = 0
+    iip = 0
+    do n_n = 1,vl_len
+        n_a = verlet_list(n_n)
+        dist = distan_list(n_n)
+        !PRINT*, N_A, IIP, ELD, "A_E",DIST
+        eld = eld + ed_fefe_la(dist)
+        iip = iip + pw_fefe_la(dist)
+!        ELD = ELD + ED_FEFE_AN(DIST)
+!        IIP = IIP + PW_FEFE_AN(DIST)
+    enddo
+    e_a = iip + mf_fe_la(eld)
+!    e_a = iip + mf_fe_an(eld)
+endsubroutine

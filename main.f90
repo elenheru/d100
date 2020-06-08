@@ -25,16 +25,18 @@ PROGRAM main
     !STOP " TEST"
     call po_wo_parameters
     call spawn_bcc_rectangular_100
+    call initiate_energetic_parameters
     !CALL TEST_CELL_PARTITION
     !CALL TEST_CELL_NEIBORS_4D
     !CALL TEST_CELL_GAP
     !CALL TEST_PO_DEPENDENCIES
     !call test_big_array
     !CALL TEST_FIND_NEIBORS_COMPARISON
-    CALL TEST_FIND_NEIBORS_COMPARISON_2
+    !CALL TEST_FIND_NEIBORS_COMPARISON_2
     !call test_system_clock
     call part_and_sort_three_zones_100
     !call find_symmetric_pairs_100
+    CALL TEST_ENERGY_ATOM_ORIGIN
 
     call wo_xyz_whole_system
 ENDPROGRAM
