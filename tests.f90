@@ -456,18 +456,20 @@ subroutine test_find_neibors_comparison_2
     call fill_an_by_cn_4d
     call fill_cn_by_an_4d
 
-    repmax=40
+    repmax=400
 
 
     CALL SYSTEM_CLOCK(ct2)
         DO REP=1,REPMAX
     do i = 1,atoms__in_total
-        call get_direct_list_test_exhaustive(i)
+        call get_verlet_list(i)
+        !call get_direct_list_test_exhaustive_linrej(i)
     enddo
         ENDDO
     CALL SYSTEM_CLOCK(ct3)
         DO REP=1,REPMAX
     do i = 1,atoms__in_total
+        !call get_verlet_list(i)
         call get_direct_list_test_exhaustive_linrej(i)
     enddo
         ENDDO

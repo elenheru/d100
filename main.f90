@@ -20,9 +20,9 @@ PROGRAM main
     print *, "TODO : V procedure polucxajuhxej spiski atomov"
     print *, ""
 
-    call test_quadratic_minimizer
+    !call test_quadratic_minimizer
     !call test_randomwalk_minimizer
-    STOP " TEST"
+    !STOP " TEST"
     call po_wo_parameters
     call spawn_bcc_rectangular_100
     !CALL TEST_CELL_PARTITION
@@ -31,10 +31,10 @@ PROGRAM main
     !CALL TEST_PO_DEPENDENCIES
     !call test_big_array
     !CALL TEST_FIND_NEIBORS_COMPARISON
-    !CALL TEST_FIND_NEIBORS_COMPARISON_2
+    CALL TEST_FIND_NEIBORS_COMPARISON_2
     !call test_system_clock
     call part_and_sort_three_zones_100
-    call find_symmetric_pairs_100
+    !call find_symmetric_pairs_100
 
     call wo_xyz_whole_system
 ENDPROGRAM

@@ -589,24 +589,37 @@ endsubroutine initiate_energetic_parameters
 subroutine  get_verlet_list(i_a)
     use positions_mod
     use interaction_mod
+    use verlet_lists_mod
     implicit none
+    !use array_parameters_mod
 
     integer, intent(in) :: i_a !atom, sosedi kotorogo trebyjetsqa najti
     integer j,list_atoms_qnt_loc,omp_get_thread_num
     real(8) delx,dely,delz,delc,dist2
 
+    atom_n = i_a
     delc = cutoff*cutoff
-    list_atoms_qnt_loc = 0
+    vl_len = 0
 
     do j=1,atoms__in_total
+
         delx = r_curr(1,j) - r_curr(1,i_a)
+        if ( delx .gt.  cutoff) cycle
+        if ( delx .lt. -cutoff) cycle
         dely = r_curr(2,j) - r_curr(2,i_a)
+        if ( dely .gt.  cutoff) cycle
+        if ( dely .lt. -cutoff) cycle
         delz = r_curr(3,j) - r_curr(3,i_a)
+        if ( delz .gt.  cutoff) cycle
+        if ( delz .lt. -cutoff) cycle
+
         dist2 = delx*delx + dely*dely + delz*delz
         if ( dist2 .gt. delc ) cycle
         if (j .eq. i_a) cycle
 
-        list_atoms_qnt_loc = list_atoms_qnt_loc + 1
+        vl_len = vl_len + 1
+        verlet_list(vl_len) = j
+        distan_list(vl_len) = sqrt(dist2)
     enddo
 
 endsubroutine get_verlet_list

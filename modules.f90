@@ -43,7 +43,6 @@ module      interaction_mod
 !    integer cn_by_an(0:incell_atoms_max,-cells_xrange:cells_xrange,-cells_yrange:cells_yrange,-cells_zrange:cells_zrange)
     integer an_by_cn_4d(4,atoms_max_array)
     integer cn_by_an_4d(0:incell_atoms_max,-cells_xrange:cells_xrange,-cells_yrange:cells_yrange,-cells_zrange:cells_zrange,0:3)
-    !real(8) distan_list(  neibors_max,atoms_max_array)
 
     logical(1), parameter, dimension(6) :: &
     xp=(/ .true.  , .false. , .true.  , .true.  , .true.  , .true.  /),&
@@ -242,3 +241,16 @@ module lists_assortiment_mod
     integer :: list_atoms_qnt
     integer, dimension(4,42) :: list_cells !
 endmodule lists_assortiment_mod
+
+module verlet_lists_mod
+    !use array_parameters_mod
+    save
+    integer, parameter :: neibors_max = 120
+    integer atom_n! dlqa kakogo atoma hranim spisok
+    integer vl_len! skolqko atomov v spiske
+    integer verlet_list(neibors_max)
+    real(8) distan_list(neibors_max)
+    real(8) alm_ed_list(neibors_max) !elektronnyje plotnosti dlqa sosedej, krome vklada centralqnogo atoma
+    real(8) eldens_list(neibors_max) !elektronnyje plotnosti dlqa sosedej
+    integer verlet_list_long(neibors_max*8) !inside double cutoff
+endmodule verlet_lists_mod
